@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from collections import Counter
 
+import json
 
 ''' reads file and create a dictonary that maps an id with
     the related fields '''
@@ -25,6 +27,7 @@ def read_invited_info():
     with open('invited_info_train.txt') as question_info_file:
         content = question_info_file.readlines()
     formated_content = {}
+    values = []
     for i in content:
         element = i.strip("\n").split("\t")
         values.append(map(int, element[2].strip()))
@@ -37,20 +40,27 @@ def plot_user_info_graphs(user_info_data):
 def plot_question_info_data_graphs(question_info_data):
     pass
 
-def plot_data(graph_data):
-    n, bins, patches = plt.hist(graph_data, max(graph_data),
-                                facecolor='g', alpha=0.75)
-    plt.xlabel('dont know ')
-    plt.ylabel('dont know')
-    plt.title('Histogram of Expert user tags')
-    plt.axis([min(graph_data), max(graph_data), 0, 3500])
-    # need to find a way to figure out the scale of data ie 3500
-    plt.grid(True)
-    plt.show()
+def print_word_id_to_file(data, file_name):
+    val = []
+    for i in data:
+        val = val + i[2] 
+    tup = Counter(val)
+    with open(file_name, 'w') as outfile:
+        json.dump(tup, outfile) 
+    # plt.hist(val,max(val))
+    # plt.title("Histogram")
+    # plt.xlabel("Value")
+    # plt.ylabel("Frequency")
+    # plt.show()
+        
 
 if __name__ == "__main__":
     user_info_data = read_files('user_info.txt')
     question_info_data = read_files('question_info.txt')
+    invited_info_train_data = read_invited_info()
+    # print_word_id_to_file(user_info_data.values(), 'some.txt')
+
+
     # plot_user_info_graphs(user_info_data)
     # plot_question_info_data_graphs(question_info_data)
-    invited_info_train_data = read_invited_info()
+    

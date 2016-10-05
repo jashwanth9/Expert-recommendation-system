@@ -27,40 +27,44 @@ Please also note that:
 All data is included in two files in the following formats:
 
 user_info.txt: expert tag file
-    Each line represents one expert user, which has four properties separated by
-    /tab. The four properties are:
-        1. Anonymized expert user ID: the unique identifier of each expert user.
-        2. Expert user tags: there will be multiple tags, i.e. 18/19/20 may
-           represent baby/ pregnancy/parenting.
-        3. Word ID sequence: User descriptions (excluding modal particles and
-           punctuation) are first segmented,then each word will be replaced by
-           the Character ID, i.e.284/42 may represent "Dont Panic".
-        4. Character ID sequence: User descriptions (excluding modal particles
-           and punctuation) are first segmented, then each character will be
-           replaced by the Character ID,i.e. 284/42 may represent “BE”.
-    note: when a property is null we will use a placeholder "/" to represent it.
+     Each line represents one expert user, which has four properties separated by
+      /tab. The fourproperties are:
+     1、Anonymized expert user ID: the unique identifier of each expert user.
+     2、Expert user tags: there will be multiple tags, i.e. 18/19/20 may 
+        represent baby/ pregnancy/ parenting.
+     3、Word ID sequence: User descriptions (excluding modal particles and 
+        punctuation) are first segmented,then each word will be replaced by the 
+        Character ID, i.e.284/42 may represent "Dont Panic".
+     4、Character ID sequence: User descriptions (excluding modal particles and
+        punctuation) are first segmented, then each character will be replaced 
+        by the Character ID,i.e. 284/42 may represent “BE”.
+
+     note:when a property is null we will use a placeholder "/" to represent it.
 
 user_info.txt: [expert_id, expert_user_tags, word_id, character_id]
 
 
+
 question_info.txt: Question data file
-    Each line represents one question, which has seven properties separated by
-    /tab. The seven properties are:
-        1. Anonymized question ID: the unique identifier of each question.
-        2. Question tag: there will be single tags, i.e. 2 may represent fitness.
-        3. Word ID sequence: User descriptions (excluding modal particles and
-           punctuation) are first segmented, then each word will be replaced by
-           the Character ID, i.e. 284/42 may represent “keyword1 keyword2”.
-        4. Character ID sequence: User descriptions (excluding modal particles
-           and punctuation) are first segmented, then each character will be
-           replaced by the Character ID, i.e.284/42 may represent “BE”.
-        5. Number of upvotes: The total number of upvotes of all answers to
-           this question. It may indicate the popularity of the question.
-        6. Number of answers: The total number of answers to this question.
+
+    Each line represents one question, which has seven properties separated by 
+     /tab. The seven properties are:
+        1、Anonymized question ID: the unique identifier of each question.
+        2、Question tag: there will be single tags, i.e. 2 may represent fitness.
+        3、Word ID sequence: User descriptions (excluding modal particles and 
+           punctuation) are first segmented, then each word will be replaced by the
+           Character ID, i.e. 284/42 may represent “Dont Panic”.
+        4、Character ID sequence: User descriptions (excluding modal particles and 
+           punctuation) are first segmented, then each character will be replaced 
+           by the Character ID, i.e.284/42 may represent “BE”.
+        5、Number of upvotes: The total number of upvotes of all answers to this 
+           question. It may indicate the popularity of the question.
+        6、Number of answers: The total number of answers to this question. 
            It may indicate the popularity of the question.
-        7. Number of top quality answers: The total number of top quality answers
-           to this question. It may indicate the popularity of the question.
-    note: when a property is null we will use a placeholder "/" to represent it.
+        7、Number of top quality answers: The total number of top quality answers 
+           to this question. It may indicate the popularity of the question. 
+
+      note: when a property is null we will use a placeholder "/" to represent it.
 
 question_info.txt: [question_id, question_tag, word_id, character_id,
                     upvotes_count, answers_count, top_quality_answers_count]
