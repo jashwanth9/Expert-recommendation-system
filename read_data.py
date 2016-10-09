@@ -86,7 +86,7 @@ def print_to_file(data, file_name):
         outfile.write(line_str)
     outfile.close()
 
-def build_tfidf_que_word(data, _keys):
+def build_tfidf_que_word(data, _keys, file_name):
     max_val = np.max(get_all_val_col(data.values()))
     len_keys = len(_keys)
     zer_vec = np.zeros((len_keys, max_val))
@@ -95,7 +95,7 @@ def build_tfidf_que_word(data, _keys):
             zer_vec[cou][content-1] = 1
     transformer = TfidfTransformer(smooth_idf=True)
     tfidf = transformer.fit_transform(zer_vec.tolist())
-    print tfidf[1]
+    pickle.dump(tfidf, open(file_name, "wb"))
 
 
 
@@ -104,7 +104,7 @@ if __name__ == "__main__":
     question_info_data, question_info_keys = read_files('question_info.txt')
     invited_info_train_data = read_invited_info()
     print user_info_data[user_info_keys[0]][1]
-    build_tfidf_que_word(user_info_data, user_info_keys)
+    build_tfidf_que_word(user_info_data, user_info_keys, 'tfidf.dat')
     # print_to_file(user_info_data, 'user_info_character_id.txt')
     # user_print_to_csv(user_info_data, user_info_keys, 'user_info_csv.dat')
     # question_print_to_csv(question_info_data, question_info_keys, 'question_info_csv.dat')
