@@ -4,6 +4,7 @@ import cPickle as pickle
 import matplotlib.pyplot as plt
 
 from collections import Counter
+from sklearn.feature_extraction.text import TfidfTransformer
 
 
 ''' reads file and create a dictonary that maps an id with
@@ -41,7 +42,7 @@ def read_invited_info():
 def get_all_val_col(values):
     val = []
     for i in values:
-        val = val + i[0]
+        val = val + i[1]
     return val
 
 def user_print_to_csv(data, _keys, file_name):
@@ -85,14 +86,28 @@ def print_to_file(data, file_name):
         outfile.write(line_str)
     outfile.close()
 
+def build_tfidf_que_word(data, _keys):
+    max_val = np.max(get_all_val_col(data.values()))
+    len_keys = len(_keys)
+    zer_vec = np.zeros((len_keys, max_val))
+    for cou in range(len_keys):
+        for content in data[_keys[cou]][1]:
+            zer_vec[cou][content-1] = 1
+    transformer = TfidfTransformer(smooth_idf=True)
+    tfidf = transformer.fit_transform(zer_vec.tolist())
+    print tfidf[1]
+
+
 
 if __name__ == "__main__":
     user_info_data, user_info_keys = read_files('user_info.txt')
     question_info_data, question_info_keys = read_files('question_info.txt')
     invited_info_train_data = read_invited_info()
+    print user_info_data[user_info_keys[0]][1]
+    build_tfidf_que_word(user_info_data, user_info_keys)
     # print_to_file(user_info_data, 'user_info_character_id.txt')
-    user_print_to_csv(user_info_data, user_info_keys, 'user_info_csv.dat')
-    question_print_to_csv(question_info_data, question_info_keys, 'question_info_csv.dat')
+    # user_print_to_csv(user_info_data, user_info_keys, 'user_info_csv.dat')
+    # question_print_to_csv(question_info_data, question_info_keys, 'question_info_csv.dat')
 
 
     
