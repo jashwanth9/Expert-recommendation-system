@@ -1,8 +1,6 @@
 import json
 import numpy as np
 import cPickle as pickle
-import matplotlib.pyplot as plt
-
 from collections import Counter
 from sklearn.feature_extraction.text import TfidfTransformer
 
@@ -41,10 +39,10 @@ def read_invited_info():
     return formated_content
 
 
-def get_all_val_col(values):
+def get_all_val_col(values, id_index):
     val = []
     for i in values:
-        val = val + i[1]
+        val = val + i[id_index]
     return val
 
 
@@ -93,7 +91,7 @@ def print_to_file(data, file_name):
 
 '''create a max vector '''
 def build_tfidf_que_word(data, _keys, id_index, file_name):
-    max_val = np.max(get_all_val_col(data.values()))
+    max_val = np.max(get_all_val_col(data.values(), id_index))
     len_keys = len(_keys)
     zer_vec = np.zeros((len_keys, max_val))
     for cou in range(len_keys):
@@ -103,26 +101,27 @@ def build_tfidf_que_word(data, _keys, id_index, file_name):
 
     transformer = TfidfTransformer(smooth_idf=True)
     tfidf = transformer.fit_transform(zer_vec.tolist())
-    # pickle.dump(tfidf, open(file_name, "wb"))
+    pickle.dump(tfidf, open(file_name, "wb"))
     print("done TfidfTransformer")
 
-    tfidf_dict = {}
-    for cou in range(len_keys):
-        tfidf_dict[_keys[cou]] = tfidf[cou].toarray()
-    pickle.dump(tfidf_dict, open(file_name, "wb"))
+    # tfidf_dict = {}
+    # for cou in range(len_keys):
+    #     tfidf_dict[_keys[cou]] = tfidf[cou].toarray()
+    # pickle.dump(tfidf_dict, open(file_name, "wb"))
 
 
 
 if __name__ == "__main__":
+    id_index = 2
+
     user_info_data, user_info_keys = read_files('user_info.txt')
     question_info_data, question_info_keys = read_files('question_info.txt')
+    print(np.max(get_all_val_col(user_info_data.values(), id_index)))
+    print(np.max(get_all_val_col(question_info_data.values(), id_index)))
     invited_info_train_data = read_invited_info()
-    id_index = 2
-    print user_info_data[user_info_keys[0]][id_index]
-    build_tfidf_que_word(user_info_data, user_info_keys, id_index, 'user_wordid_tfidf.dat')
-    # print_to_file(user_info_data, 'user_info_character_id.txt')
-    # user_print_to_csv(user_info_data, user_info_keys, 'user_info_csv.dat')
-    # question_print_to_csv(question_info_data, question_info_keys, 'question_info_csv.dat')
-
-
+    
+    print question_info_data[question_info_keys[0]][id_index]
+    build_tfidf_que_word(user_info_data, user_info_keys, id_index, 'user_charid_tfidf.dat')
+    pickle.dump(user_info_keys, open('user_info_keys.dat', "wb"))
+    
     
