@@ -42,8 +42,9 @@ user_info.txt: expert tag file
      note:when a property is null we will use a placeholder "/" to represent it.
 
 user_info.txt: [expert_id, expert_user_tags, word_id, character_id]
-
-
+Example:-
+user_info.txt: [e8a0f6906978da77dab3d1d779bf2904, 7, 45/13233/1871/13234/2182/3754/444/2644, 
+                73/953/15/291/182/168/438/1474/107/377/11/1002/135]
 
 question_info.txt: Question data file
 
@@ -68,6 +69,9 @@ question_info.txt: Question data file
 
 question_info.txt: [question_id, question_tag, word_id, character_id,
                     upvotes_count, answers_count, top_quality_answers_count]
+Example:-
+question_info.txt: [367edcb36424493a7cf80f70903a64cd, 1, 8/9/10/11/12, 
+                    11/12/13/14/15/15/16/17/12, 173, 10,  5]
 
 
 The training set will contain one file with the following format:
