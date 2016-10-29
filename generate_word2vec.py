@@ -4,7 +4,7 @@ import gensim
 import numpy as np
 import logging
 import sys
-
+import cPickle as pickle
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 def prep_data(file_name):
@@ -24,6 +24,8 @@ def avg_vecs(desc, model, dim, trained_words):
 		if word in trained_words:
 			nwords += 1
 			avg_feats = np.add(avg_feats, model[word])
+	if nwords == 0:
+		return avg_feats
 	return avg_feats / nwords
 
 def gen_word2vec(data, dims):
@@ -46,7 +48,8 @@ for sentence in sentences:
 	avg_word_vecs.append(avg_vecs(sentence, model, dims, trained_words));
 
 avg_word_vecs = np.vstack(avg_word_vecs)
-
+print avg_word_vecs.shape
+pickle.dump(avg_word_vecs, open('question_word_wordvec.p', 'wb'))
 #load the model, Just FYI
 #loaded_model = gensim.models.Word2Vec.load('w2v_model_words')
 
