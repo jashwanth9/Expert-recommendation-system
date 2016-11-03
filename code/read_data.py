@@ -2,6 +2,7 @@ import json
 import numpy as np
 import cPickle as pickle
 from collections import Counter
+from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfTransformer
 
 
@@ -110,23 +111,25 @@ def build_tfidf_que_word(data, _keys, id_index, file_name):
     # pickle.dump(tfidf_dict, open(file_name, "wb"))
 
 
-def compute_similarity(file_name):
-    word_vec = pickle.load(open(file_name, 'rb'))
-    A_sparse = sparse.csr_matrix(samples)
-    similarities = cosine_similarity(A_sparse)
+def compute_similarity(file_name, op_file_name):
+    tfidf_matrix = pickle.load(open(file_name, 'rb'))
+    similarities = cosine_similarity(tfidf_matrix)
+    pickle.dump(similarities, open(op_file_name, 'wb'))
 
 
 if __name__ == "__main__":
     id_index = 2
 
-    user_info_data, user_info_keys = read_files('user_info.txt')
-    question_info_data, question_info_keys = read_files('question_info.txt')
+    user_info_data, user_info_keys = read_files('../train_data/user_info.txt')
+    question_info_data, question_info_keys = read_files('../train_data/question_info.txt')
     print(np.max(get_all_val_col(user_info_data.values(), id_index)))
     print(np.max(get_all_val_col(question_info_data.values(), id_index)))
-    invited_info_train_data = read_invited_info()
+    # invited_info_train_data = read_invited_info()
     
     print question_info_data[question_info_keys[0]][id_index]
     # build_tfidf_que_word(user_info_data, user_info_keys, id_index, 'user_charid_tfidf.dat')
+    # compute_similarity('../features/user_charid_tfidf.dat', '../features/user_charid_similarity.dat')
+    # compute_similarity('../features/ques_charid_tfidf.dat', '../features/ques_charid_similarity.dat')
     
     
     
