@@ -63,14 +63,12 @@ def getLNearestQues(quesSim, L, qList):
 		l1 = quesSim[i].argsort()[(-L):]
 		nb[qList[i]] = []
 		for j in l1:
-			if j == i:
-				continue
 			nb[qList[i]].append(qList[j])
 	return nb
 
 
 
-def getScores(neighbors, uList, userProfiles, valData, qList, qnb, quesSim):
+def getScores(neighbors, uList, userProfiles, valData, qList, qnb, quesSim, questionData, qtopic):
 	scores = []
 	for val in valData:
 		ques, user = val
@@ -80,11 +78,20 @@ def getScores(neighbors, uList, userProfiles, valData, qList, qnb, quesSim):
 			continue
 		for nb in neighbors[user]:
 			nbprof = userProfiles[nb]	
-			for q in qnb[ques]:
-				if  nbprof[qList.index(q)] > 0:
-					score += quesSim[qList.index(ques), qList.index(q)]*(1-distance.cosine(userProfiles[user], nbprof))
-				elif nbprof[qList.index(q)] < 0:
-					score -= quesSim[qList.index(ques), qList.index(q)]*(1-distance.cosine(userProfiles[user], nbprof))
+			for q in qtopic[questionData[ques]]:
+				if  nbprof[q] > 0:
+					score += (1-distance.cosine(userProfiles[user], nbprof))
+					break
+				elif nbprof[q] < 0:
+					score -= (1-distance.cosine(userProfiles[user], nbprof))
+					break
+
+			# for q in qnb[ques]:
+
+			# 	if  nbprof[qList.index(q)] > 0:
+			# 		score += quesSim[qList.index(ques), qList.index(q)]*(1-distance.cosine(userProfiles[user], nbprof))
+			# 	elif nbprof[qList.index(q)] < 0:
+			# 		score -= quesSim[qList.index(ques), qList.index(q)]*(1-distance.cosine(userProfiles[user], nbprof))
 		scores.append([ques, user, score])
 	return scores
 
@@ -98,6 +105,8 @@ def loadData():
 	valData = []
 	wordvec = {}
 	userorder = []
+	qtopic = {}
+
 	with open('user_info.txt', 'r') as f1:
 		for line in f1:
 			sp = line.split()
@@ -106,11 +115,16 @@ def loadData():
 			topics = sp[1].split('/')
 			userData[uid] = topics
 	with open('question_info.txt', 'r') as f1:
+		i = 0
 		for line in f1:
 			sp = line.split()
 			qid = sp[0]
 			topic = sp[1]
 			questionData[qid] = topic
+			if topic not in qtopic:
+				qtopic[topic] = set()
+			qtopic[topic].add(i)
+			i+=1
 	with open('invited_info_train.txt', 'r') as f1:
 		for line in f1:
 			line = line.rstrip('\n')
@@ -119,26 +133,28 @@ def loadData():
 	with open('validate_nolabel.txt', 'r') as f1:
 		for line in f1:
 			valData.append(line.rstrip('\r\n').split(','))
-	quesSim = pickle.load(open('question_word_wordvec_sim.p', 'rb'))
+	quesSim = []
+	#quesSim = pickle.load(open('question_word_wordvec_sim.p', 'rb'))
 	print "Data Loaded"
 	#wv = pickle.load(open('user_word_wordvec.p', 'rb'))
 	#for i in range(0, len(wv)):
 		#wordvec[userorder[i]] = wv[i]
 
 
+	#pdb.set_trace()	
+	return userData, questionData, trainData, valData[1:], wordvec, quesSim, qtopic
 
-	return userData, questionData, trainData, valData[1:], wordvec, quesSim
-
-K = 30
-L = 10
-userData, questionData, trainData, valData, wordvec, quesSim = loadData()
-qList = questionData.keys()
+K = 100
+L = 5
+userData, questionData, trainData, valData, wordvec, quesSim, qtopic = loadData()
+qList = pickle.load(open('question_info_keys.dat'))
 userProfiles = getUserProfiles(userData, questionData, trainData, qList, wordvec)
 unb, uList = getKNearestUsers(userProfiles, K)
-qnb = getLNearestQues(quesSim, L, qList)
+qnb = {}
+#qnb = getLNearestQues(quesSim, L, qList)
 #pdb.set_trace()
 
-scores = getScores(unb, uList, userProfiles, valData, qList, qnb, quesSim)
+scores = getScores(unb, uList, userProfiles, valData, qList, qnb, quesSim, questionData, qtopic)
 umax = float("-inf")
 umin = float("inf")
 
@@ -149,8 +165,8 @@ for score in scores:
 	umax = max(umax, score[2])
 	umin = min(umin, score[2])
 
-pdb.set_trace()
-with open('v_userfilter_ques_'+str(K)+'.csv', 'w') as f1:
+#pdb.set_trace()
+with open('v_userfilter_ques_'+str(K)+'_'+str(L)+'.csv', 'w') as f1:
 	f1.write('qid,uid,label\n')
 	for score in scores:
 		diff = umax - umin
