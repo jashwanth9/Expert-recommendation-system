@@ -118,7 +118,7 @@ def compute_similarity(file_name, op_file_name):
 
 
 if __name__ == "__main__":
-    id_index = 2
+    id_index = 1
 
     user_info_data, user_info_keys = read_files('../train_data/user_info.txt')
     question_info_data, question_info_keys = read_files('../train_data/question_info.txt')
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     # invited_info_train_data = read_invited_info()
     
     print question_info_data[question_info_keys[0]][id_index]
-    # build_tfidf_que_word(user_info_data, user_info_keys, id_index, 'user_charid_tfidf.dat')
+    build_tfidf_que_word(question_info_data, question_info_keys, id_index, 'ques_wordid_tfidf.dat')
     # compute_similarity('../features/user_charid_tfidf.dat', '../features/user_charid_similarity.dat')
     # compute_similarity('../features/ques_charid_tfidf.dat', '../features/ques_charid_similarity.dat')
     
