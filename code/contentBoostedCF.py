@@ -8,8 +8,11 @@ import pdb
 import warnings
 from scipy import sparse
 import cPickle as pickle
+from sklearn.naive_bayes import MultinomialNB
+import collections
 
 def loadData():
+	print "loading data"
 	useritem_sparse = pickle.load(open('../features/useritemmatrix_normalized.dat', 'rb'))
 	valData = []
 	question_feats = {}
@@ -25,7 +28,7 @@ def loadData():
 	tf = pickle.load(open('../features/ques_charid_tfidf.dat', 'rb'))
 	tfx = tf.toarray()
 	for i in range(len(tfx)):
-		question_feats[question_keys[i]] = tfx[0].tolist()
+		question_feats[ques_keys[i]] = tfx[0].tolist()
 	with open('../train_data/invited_info_train.txt', 'r') as f1:
 		for line in f1:
 			line = line.rstrip('\n')
@@ -60,10 +63,12 @@ def contentBoosting(user_keys, ques_keys, useritem, usermodels, question_feats):
 	for i in range(0, len(user_keys)):
 		for j in range(0, len(ques_keys)):
 			if useritem[i][j] == 0:
-				prediction = usermodels[i].pred([question_feats[ques_keys[j]]])[0]
+				if user_keys[i] not in usermodels:
+					continue
+				prediction = usermodels[user_keys[i]].predict([question_feats[ques_keys[j]]])[0]
 				if prediction == 1:
 					useritem[i][j] = 1
-				elif prediction == -1:
+				elif prediction == 0:
 					useritem[i][j] = -0.125
 				else:
 					print prediction
@@ -106,9 +111,9 @@ def collabFilteringPredictions(useritem, sparse, k, valData, ques_keys, user_key
 
 k = 20
 
-useritem_sparse, valData, ques_keys, user_keys, train_data, question_feats = loadData()
+useritem_sparse, valData, ques_keys, user_keys, trainData, question_feats = loadData()
 usermodels = getModels(trainData, question_feats)
-useritem = contentBoosting(user_keys, ques_keys, useritem_spare, usermodels, question_feats)
+useritem = contentBoosting(user_keys, ques_keys, useritem_sparse, usermodels, question_feats)
 predictions = collabFilteringPredictions(useritem, False, k, valData, ques_keys, user_keys)
 
 with open('../validation/content_boosted_'+str(k)+'.csv', 'w') as f1:
