@@ -126,8 +126,8 @@ if __name__ == "__main__":
     print(np.max(get_all_val_col(question_info_data.values(), id_index)))
     # invited_info_train_data = read_invited_info()
     
-    print question_info_data[question_info_keys[0]][id_index]
-    # build_tfidf_que_word(user_info_data, user_info_keys, id_index, 'user_charid_tfidf.dat')
+    print user_info_data[user_info_keys[0]][id_index]
+    build_tfidf_que_word(user_info_data, user_info_keys, id_index, 'user_charid_tfidf.dat')
     # compute_similarity('../features/user_charid_tfidf.dat', '../features/user_charid_similarity.dat')
     # compute_similarity('../features/ques_charid_tfidf.dat', '../features/ques_charid_similarity.dat')
     
