@@ -49,14 +49,11 @@ def getItemProfiles(userData, questionData, trainData, uList, wordvec):
 		itemProfiles[ques] = np.zeros(shape=(len_user, ))
 	for tup in trainData:
 		qid, uid, ans = tup
-		if userData[uid] in questionData[qid]:
-			val = 1
-		else:
-			val = 1
+		val = 1
 		if ans == 0:
 			val = -1*val
 		itemProfiles[qid][uList.index(uid)] = val
-	for item in itemProfiles.keys():
+	for item in list(itemProfiles.keys()):
 		#userProfiles[user] = np.hstack((userProfiles[user], wordvec[user]))
 		if np.linalg.norm(itemProfiles[item]) == 0:
 			del itemProfiles[item]
@@ -66,7 +63,7 @@ def getItemProfiles(userData, questionData, trainData, uList, wordvec):
 
 def getKNearestUsers(userProfiles, k):
 	# return k nearestUsers dict userId -> list[userIds]
-	uList = userProfiles.keys()
+	uList = list(userProfiles.keys())
 	#samples = []
 	samples = np.zeros(shape=(len(uList), len(userProfiles[uList[0]])))
 	for i in range(len(uList)):
@@ -104,15 +101,15 @@ def getScores(neighbors, uList, userProfiles, valData, qList):
 	for val in valData:
 		ques, user = val
 		score = 0
-		if user not in userProfiles:
+		if ques not in userProfiles:
 			scores.append([ques, user, score])
 			continue
-		for nb in neighbors[user]:
+		for nb in neighbors[ques]:
 			nbprof = userProfiles[nb]
-			if  nbprof[qList.index(ques)] > 0:
-				score += (1-distance.cosine(userProfiles[user], nbprof))
-			elif nbprof[qList.index(ques)] < 0:
-				score -= (1-distance.cosine(userProfiles[user], nbprof))
+			if  nbprof[qList.index(user)] > 0:
+				score += (1-distance.cosine(userProfiles[ques], nbprof))
+			elif nbprof[qList.index(user)] < 0:
+				score -= (1-distance.cosine(userProfiles[ques], nbprof))
 		scores.append([ques, user, score])
 	return scores
 
@@ -154,29 +151,30 @@ def loadData():
 
 
 
-K=100
+K=20
 userData, questionData, trainData, valData, wordvec = loadData()
 # qList = questionData.keys()
 # userProfiles = getUserProfiles(userData, questionData, trainData, qList, wordvec)
-user_keys = userData.keys()
+user_keys = list(userData.keys())
 itemProfiles = getItemProfiles(userData, questionData, trainData, user_keys, wordvec)
 
+print("done1")
 nb, uList = getKNearestUsers(itemProfiles, K)
-#pdb.set_trace()
 
+print("done1")
 scores = getScores(nb, uList, itemProfiles, valData, user_keys)
 umax = float("-inf")
 umin = float("inf")
 
-
+print("done1")
 #scaling (converting to probabilities)
 for score in scores:
 	#if score[0] not in umax:
 	umax = max(umax, score[2])
 	umin = min(umin, score[2])
-
-# pdb.set_trace()
-with open('../validation/v_userfilter_all'+str(K)+'.csv', 'w') as f1:
+print("done1")
+pdb.set_trace()
+with open('../validation/v_itemfilter_all'+str(K)+'.csv', 'w') as f1:
 	f1.write('qid,uid,label\n')
 	for score in scores:
 		diff = umax - umin
