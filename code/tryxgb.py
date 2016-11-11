@@ -33,7 +33,6 @@ for i in range(len(content)):
 
 
 # load the data
-label = np.array(label).transpose()
 print(data.shape)
 print(label.shape)
 dtrain = xgb.DMatrix(data, label=label)
@@ -44,14 +43,14 @@ dtrain = xgb.DMatrix(data, label=label)
 with open('../train_data/validate_nolabel.txt') as train_file:
 	content = train_file.readlines()
 testData = []
-element = content[0].strip("\r\n").split(",")
-data = np.zeros(shape=(len(content), len(question_feats[element[0]])+len(user_feats[element[1]])))
-for i in range(len(content)):
+element = content[1].strip("\r\n").split(",")
+data = np.zeros(shape=(len(content)-1, len(question_feats[element[0]])+len(user_feats[element[1]])))
+for i in range(1, len(content)):
 	element = content[i].strip("\r\n").split(",")
 	testData.append(element)
-	data[i] = np.hstack((question_feats[element[0]], user_feats[element[1]]))
+	data[i-1] = np.hstack((question_feats[element[0]], user_feats[element[1]]))
 
-
+print data.shape
 dtest = xgb.DMatrix(data)
 
 ##########################################################
@@ -79,7 +78,7 @@ param = {'objective':'binary:logistic' }
 # With parameter list and data, you are able to train a model.
 
 # Training
-num_round = 10
+num_round = 20
 bst = xgb.train(param, dtrain, num_round)
 
 # Prediction
@@ -87,11 +86,13 @@ bst = xgb.train(param, dtrain, num_round)
 # data = np.random.rand(7, 10)
 # dtest = xgb.DMatrix(data)
 
-ypred = bst.predict(xgmat)
+ypred = bst.predict(dtest)
 # If early stopping is enabled during training, you can get predicticions from the best iteration with bst.best_ntree_limit:
 
 # ypred = bst.predict(xgmat,ntree_limit=bst.best_ntree_limit)
 
+print(len(testData))
+print ypred.shape
 with open('../validation/v_xgboost_word_tfidf.csv', 'w') as f1:
 	f1.write('qid,uid,label\n')
 	for i in range(0, len(ypred)):
