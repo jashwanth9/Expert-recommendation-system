@@ -3,6 +3,7 @@ import xgboost as xgb
 import cPickle as pickle
 
 
+## data
 question_feats = {}
 question_keys = pickle.load(open('../features/question_info_keys.dat', 'rb'))
 tf1 = pickle.load(open('../features/ques_charid_tfidf.dat', 'rb'))
@@ -17,7 +18,7 @@ tf2_x = tf2.toarray()
 for i in range(len(tf2_x)):
 	user_feats[user_keys[i]] = tf2_x[i]
 
-
+# Train data
 with open('../train_data/invited_info_train.txt') as train_file:
 	content = train_file.readlines()
 
@@ -26,7 +27,6 @@ data = np.zeros(shape=(len(content), len(question_feats[element[0]])+len(user_fe
 label = np.zeros(shape=(len(content),1))
 
 for i in range(len(content)):
-	print i
 	element = content[i].strip("\n").split("\t")
 	data[i] = np.hstack((question_feats[element[0]], user_feats[element[1]]))
 	label[i]= element[2]
@@ -38,6 +38,23 @@ print(data.shape)
 print(label.shape)
 dtrain = xgb.DMatrix(data, label=label)
 
+
+##########################################################
+# Test data
+with open('../train_data/validate_nolabel.txt') as train_file:
+	content = train_file.readlines()
+testData = []
+element = content[0].strip("\r\n").split(",")
+data = np.zeros(shape=(len(content), len(question_feats[element[0]])+len(user_feats[element[1]])))
+for i in range(len(content)):
+	element = content[i].strip("\r\n").split(",")
+	testData.append(element)
+	data[i] = np.hstack((question_feats[element[0]], user_feats[element[1]]))
+
+
+dtest = xgb.DMatrix(data)
+
+##########################################################
 
 # To load a scpiy.sparse array into DMatrix, the command is:
 # csr = scipy.sparse.csr_matrix((dat, (row, col)))
@@ -69,12 +86,16 @@ bst = xgb.train(param, dtrain, num_round)
 # # 7 entities, each contains 10 features
 # data = np.random.rand(7, 10)
 # dtest = xgb.DMatrix(data)
-# ypred = bst.predict(xgmat)
+
+ypred = bst.predict(xgmat)
 # If early stopping is enabled during training, you can get predicticions from the best iteration with bst.best_ntree_limit:
 
 # ypred = bst.predict(xgmat,ntree_limit=bst.best_ntree_limit)
 
-
+with open('../validation/v_xgboost_word_tfidf.csv', 'w') as f1:
+	f1.write('qid,uid,label\n')
+	for i in range(0, len(ypred)):
+		f1.write(testData[i][0]+','+testData[i][1]+','+str(ypred[i])+'\n')
 
 
 
