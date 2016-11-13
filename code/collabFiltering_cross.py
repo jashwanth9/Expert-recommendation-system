@@ -22,7 +22,12 @@ def loadData():
 			valData.append(line.rstrip('\r\n').split(','))
 	ques_keys = pickle.load(open('../train_data/question_info_keys.dat', 'rb'))
 	user_keys = pickle.load(open('../train_data/user_info_keys.dat', 'rb'))
-	
+	ques_keys_map = {}
+	user_keys_map = {}
+	for i in range(len(user_keys)):
+		user_keys_map[user_keys[i]] = i
+	for i in range(len(ques_keys)):
+		ques_keys_map[ques_keys[i]] = i
 	# tf = pickle.load(open('../features/ques_charid_tfidf.dat', 'rb'))
 	# tfx = tf.toarray()
 	# for i in range(len(tfx)):
@@ -33,10 +38,10 @@ def loadData():
 	# 		sp = line.split()
 	# 		trainData.append((sp[0], sp[1], int(sp[2])))
 
-	return ques_keys, user_keys
+	return ques_keys_map, user_keys_map
 
 
-def collabFilteringPredictions(useritem, sparse, k, valData, ques_keys, user_keys):
+def collabFilteringPredictions(useritem, sparse, k, valData, ques_keys_map, user_keys_map):
 	print "getting predictions"
 	#input: useritem matrix
 	#sparese: whether useritem is sparse or not
@@ -48,10 +53,10 @@ def collabFilteringPredictions(useritem, sparse, k, valData, ques_keys, user_key
 	useritemfull = useritem.toarray()
 	for qid, uid in valData:
 		score = 0
-		for nbindex in similarities[user_keys.index(uid)].argsort()[(-k-1):]:
-			if nbindex == user_keys.index(uid): #exclude self
+		for nbindex in similarities[user_keys_map[uid]].argsort()[(-k-1):]:
+			if nbindex == user_keys_map[uid]: #exclude self
 				continue
-			score += useritemfull[nbindex][ques_keys.index(qid)]*similarities[user_keys.index(uid)][nbindex]
+			score += useritemfull[nbindex][ques_keys_map[qid]]*similarities[user_keys_map[uid]][nbindex]
 		scores.append(score)
 
 	predictions = []
@@ -64,24 +69,24 @@ def collabFilteringPredictions(useritem, sparse, k, valData, ques_keys, user_key
 
 	return predictions
 
-def getUserItemMatrix(trainData, ques_keys, user_keys):
+def getUserItemMatrix(trainData, ques_keys_map, user_keys_map):
 	print "getting useritem matrix"
 	useritem = np.zeros(shape=(len(user_keys), len(ques_keys)))
 	for qid, uid, val in trainData:
 		if val == '1' or val==1:
-			useritem[user_keys.index(uid)][ques_keys.index(qid)] = 1
+			useritem[user_keys_map[uid]][ques_keys_map[qid]] = 1
 				#posc+=1
 		else:
-			useritem[user_keys.index(uid)][ques_keys.index(qid)] = -0.125
+			useritem[user_keys_map[uid]][ques_keys_map[qid]] = -0.125
 	uisparse = sparse.csr_matrix(useritem)
 	return uisparse
 
 
 def run(trainData, valData, foldno, k):
-	ques_keys, user_keys = loadData()
-	useritem_sparse = getUserItemMatrix(trainData, ques_keys, user_keys)
+	ques_keys_map, user_keys_map = loadData()
+	useritem_sparse = getUserItemMatrix(trainData, ques_keys_map, user_keys_map)
 	
-	predictions = collabFilteringPredictions(useritem_sparse, True, k, valData, ques_keys, user_keys)
+	predictions = collabFilteringPredictions(useritem_sparse, True, k, valData, ques_keys_map, user_keys_map)
 
 	fname = '../localvalidation/collab_norm_excludingself'+str(k)+'_'+str(foldno)+'.csv'
 	with open(fname, 'w') as f1:
