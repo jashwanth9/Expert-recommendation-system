@@ -22,6 +22,7 @@ def ndcg(valfile):
 				predProb[qid] = []
 			predProb[qid].append((uid, float(prob)))
 	scores = []
+	weights = []
 	for qid in predProb:
 		ranks = sorted(predProb[qid],key=itemgetter(1),reverse=True)
 		r = []
@@ -30,8 +31,10 @@ def ndcg(valfile):
 		s5 = ndcg_at_k(r, 5)
 		s10 = ndcg_at_k(r, 10)
 		scores.append(s5*0.5 + s10*0.5)
-	print scores
-	return np.mean(scores)
+		weights.append(len(r))
+	#print scores
+	#print weights
+	return np.average(scores, weights=weights)
 
 
 def accuracy(valfile):

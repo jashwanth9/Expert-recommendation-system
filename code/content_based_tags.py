@@ -38,25 +38,28 @@ def loadData():
 	# 		i += 1
 	for i in range(len(question_keys)):
 		question_feats[question_keys[i]] = [1 if x == topics[i] else 0 for x in range(22)]
+		#question_feats[question_keys[i]] = [1, 1, 1]
 
 	#tf2 = pickle.load(open('../features/ques_wordid_tfidf.dat', 'rb'))
 	#tfx2 = tf2.toarray()
 	#for i in range(len(tfx2)):
 		#question_feats[question_keys[i]].append(tfx2[])
-	with open('../train_data/invited_info_train.txt', 'r') as f1:
-		for line in f1:
-			line = line.rstrip('\n')
-			sp = line.split()
-			trainData.append((sp[0], sp[1], int(sp[2])))
-
-	# with open('../train_data/validate_nolabel.txt', 'r') as f1:
-	#	line = f1.readline()
+	# with open('../train_data/invited_info_train.txt', 'r') as f1:
 	# 	for line in f1:
-	# 		valData.append(line.rstrip('\r\n').split(','))
-	random.shuffle(trainData)
-	valData = [x[:2] for x in trainData[:int(0.15*len(trainData))]]
-	trainData = trainData[int(0.15*len(trainData)):]
-	return question_feats, trainData, valData
+	# 		line = line.rstrip('\n')
+	# 		sp = line.split()
+	# 		trainData.append((sp[0], sp[1], int(sp[2])))
+
+	# # with open('../train_data/validate_nolabel.txt', 'r') as f1:
+	# #	line = f1.readline()
+	# # 	for line in f1:
+	# # 		valData.append(line.rstrip('\r\n').split(','))
+	# #valData = [x[:2] for x in trainData]
+	# random.shuffle(trainData)
+
+	# valData = [x[:2] for x in trainData[:int(0.15*len(trainData))]]
+	# trainData = trainData[int(0.15*len(trainData)):]
+	return question_feats
 
 def getModels(trainData, question_feats):
 	print "getting models"
@@ -95,14 +98,16 @@ def getPredictions(valData, nbmodels, question_feats):
 			#predictions[-1] = 0.111
 	return predictions
 
-question_feats, trainData, valData = loadData()
-nbmodels = getModels(trainData, question_feats)
-predictions = getPredictions(valData, nbmodels, question_feats)
-fname = '../localvalidation/content_ques_topics.csv'
-with open(fname , 'w') as f1:
-	f1.write('qid,uid,label\n')
-	for i in range(0, len(predictions)):
-		f1.write(valData[i][0]+','+valData[i][1]+','+str(predictions[i])+'\n')
+def run(trainData, valData):
 
-print evaluate.ndcg(fname)
-print evaluate.accuracy(fname)
+	question_feats = loadData()
+	nbmodels = getModels(trainData, question_feats)
+	predictions = getPredictions(valData, nbmodels, question_feats)
+	fname = '../localvalidation/content_ques_topics.csv'
+	with open(fname , 'w') as f1:
+		f1.write('qid,uid,label\n')
+		for i in range(0, len(predictions)):
+			f1.write(valData[i][0]+','+valData[i][1]+','+str(predictions[i])+'\n')
+
+	return evaluate.ndcg(fname)
+#print evaluate.accuracy(fname)
