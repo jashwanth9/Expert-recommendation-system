@@ -10,14 +10,27 @@ from scipy import sparse
 import cPickle as pickle
 
 def loadData():
-	useritem_sparse = pickle.load(open('../features/useritemmatrix.dat', 'rb'))
+	useritem_sparse = pickle.load(open('../features/useritemmatrix_normalized.dat', 'rb'))
 	valData = []
+	question_feats = {}
+	trainData = []
+
 	with open('../train_data/validate_nolabel.txt', 'r') as f1:
 		header = f1.readline()
 		for line in f1:
 			valData.append(line.rstrip('\r\n').split(','))
 	ques_keys = pickle.load(open('../train_data/question_info_keys.dat', 'rb'))
 	user_keys = pickle.load(open('../train_data/user_info_keys.dat', 'rb'))
+	
+	# tf = pickle.load(open('../features/ques_charid_tfidf.dat', 'rb'))
+	# tfx = tf.toarray()
+	# for i in range(len(tfx)):
+	# 	question_feats[question_keys[i]] = tfx[0].tolist()
+	# with open('../train_data/invited_info_train.txt', 'r') as f1:
+	# 	for line in f1:
+	# 		line = line.rstrip('\n')
+	# 		sp = line.split()
+	# 		trainData.append((sp[0], sp[1], int(sp[2])))
 
 	return useritem_sparse, valData, ques_keys, user_keys
 
@@ -34,10 +47,14 @@ def collabFilteringPredictions(useritem, sparse, k, valData, ques_keys, user_key
 	for qid, uid in valData:
 		score = 0
 		for nbindex in similarities[user_keys.index(uid)].argsort()[(-k-1):]:
+			if nbindex == user_keys.index(uid): #exclude self
+				continue
 			score += useritemfull[nbindex][ques_keys.index(qid)]*similarities[user_keys.index(uid)][nbindex]
 		scores.append(score)
 
 	predictions = []
+
+	#normalization
 	maxscore = max(scores)
 	minscore = min(scores)
 	for score in scores:
@@ -49,7 +66,7 @@ k = 20
 useritem_sparse, valData, ques_keys, user_keys = loadData()
 predictions = collabFilteringPredictions(useritem_sparse, True, k, valData, ques_keys, user_keys)
 
-with open('../validation/collab_'+str(k)+'.csv', 'w') as f1:
+with open('../validation/collab_norm_excludingself'+str(k)+'.csv', 'w') as f1:
 	f1.write('qid,uid,label\n')
 	for i in range(0, len(predictions)):
 		f1.write(valData[i][0]+','+valData[i][1]+','+str(predictions[i])+'\n')
