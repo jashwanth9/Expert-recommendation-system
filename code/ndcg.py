@@ -1,17 +1,4 @@
-'''
-Created on 2016年7月25日
-@author: lenovo
-'''
 
-"""Information Retrieval metrics
-Useful Resources:
-http://www.cs.utexas.edu/~mooney/ir-course/slides/Evaluation.ppt
-http://www.nii.ac.jp/TechReports/05-014E.pdf
-http://www.stanford.edu/class/cs276/handouts/EvaluationNew-handout-6-per.pdf
-http://hal.archives-ouvertes.fr/docs/00/72/67/60/PDF/07-busa-fekete.pdf
-Learning to Rank for Information Retrieval (Tie-Yan Liu)
-"""
-#coding=utf-8
 import numpy as np
 
 
