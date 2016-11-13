@@ -35,12 +35,16 @@ for i in range(len(content)):
 # load the data
 print(data.shape)
 print(label.shape)
+labelv = label[215501:,:]
+dval = xgb.DMatrix(data[215501:,:], label=labelv)
+data = data[:215500,:]
+label = label[:215500,:]
 dtrain = xgb.DMatrix(data, label=label)
-
+evallist  = [(dval,'eval'), (dtrain,'train')]
 
 ##########################################################
 # Test data
-with open('../train_data/validate_nolabel.txt') as train_file:
+with open('../train_data/test_nolabel.txt') as train_file:
 	content = train_file.readlines()
 testData = []
 element = content[1].strip("\r\n").split(",")
@@ -61,7 +65,7 @@ dtest = xgb.DMatrix(data)
 
 
 # Booster parameters
-param = {'objective':'binary:logistic' }
+param = {'objective':'rank:pairwise', 'max_depth':'20', 'eval_metric':'ndcg@10000', 'eta':'0.15' }
 # param['nthread'] = 4
 # param['eval_metric'] = 'auc'
 # You can also specify multiple eval metrics:
@@ -78,8 +82,8 @@ param = {'objective':'binary:logistic' }
 # With parameter list and data, you are able to train a model.
 
 # Training
-num_round = 20
-bst = xgb.train(param, dtrain, num_round)
+num_round = 100
+bst = xgb.train(param, dtrain, num_round, evallist)
 
 # Prediction
 # # 7 entities, each contains 10 features
@@ -93,7 +97,19 @@ ypred = bst.predict(dtest)
 
 print(len(testData))
 print ypred.shape
-with open('../validation/v_xgboost_word_tfidf.csv', 'w') as f1:
+
+
+#normalization
+predictions = []
+scores = ypred
+maxscore = max(scores)
+minscore = min(scores)
+for score in scores:
+	predictions.append((score-minscore)/float(maxscore-minscore))
+
+ypred = predictions
+
+with open('../validation/t_xgboost_word_tfidf.csv', 'w') as f1:
 	f1.write('qid,uid,label\n')
 	for i in range(0, len(ypred)):
 		f1.write(testData[i][0]+','+testData[i][1]+','+str(ypred[i])+'\n')
