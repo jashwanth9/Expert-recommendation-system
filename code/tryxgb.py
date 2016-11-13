@@ -44,7 +44,7 @@ evallist  = [(dval,'eval'), (dtrain,'train')]
 
 ##########################################################
 # Test data
-with open('../train_data/test_nolabel.txt') as train_file:
+with open('../train_data/validate_nolabel.txt') as train_file:
 	content = train_file.readlines()
 testData = []
 element = content[1].strip("\r\n").split(",")
@@ -65,7 +65,7 @@ dtest = xgb.DMatrix(data)
 
 
 # Booster parameters
-param = {'objective':'rank:pairwise', 'max_depth':'20', 'eval_metric':'ndcg@10000', 'eta':'0.15' }
+param = {'objective':'rank:pairwise', 'max_depth':'20', 'eval_metric':'ndcg@10000', 'eta':'0.27' }
 # param['nthread'] = 4
 # param['eval_metric'] = 'auc'
 # You can also specify multiple eval metrics:
@@ -109,7 +109,7 @@ for score in scores:
 
 ypred = predictions
 
-with open('../validation/t_xgboost_word_tfidf.csv', 'w') as f1:
+with open('../validation/v_xgboost_word_tfidf.csv', 'w') as f1:
 	f1.write('qid,uid,label\n')
 	for i in range(0, len(ypred)):
 		f1.write(testData[i][0]+','+testData[i][1]+','+str(ypred[i])+'\n')
