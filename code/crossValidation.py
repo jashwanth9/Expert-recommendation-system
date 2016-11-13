@@ -24,7 +24,7 @@ def cv(k):
 	#res = pymp.shared.array((folds,), dtype='uint8')
 	#rp = []
 	rp = pymp.shared.list()
-	with pymp.Parallel(6) as p:
+	with pymp.Parallel(8) as p:
 		r = 0
 		for i in p.range(folds):
 			td = trainData[:(i)*(N/folds)] + trainData[(i+1)*(N/folds):]
@@ -39,9 +39,10 @@ def cv(k):
 				rp.append(r)
 			
 	print rp
-	with open('cvkcollab.txt', 'r') as f1:
+	with open('cvkcollab.txt', 'a') as f1:
 		f1.write(str(k)+','+str(np.mean(rp))+'\n')
 
 
-for k in range(10, 200, 10):
+for k in range(10, 201, 10):
+	print k
 	cv(k)

@@ -71,7 +71,7 @@ def collabFilteringPredictions(useritem, sparse, k, valData, ques_keys_map, user
 
 def getUserItemMatrix(trainData, ques_keys_map, user_keys_map):
 	print "getting useritem matrix"
-	useritem = np.zeros(shape=(len(user_keys), len(ques_keys)))
+	useritem = np.zeros(shape=(len(user_keys_map), len(ques_keys_map)))
 	for qid, uid, val in trainData:
 		if val == '1' or val==1:
 			useritem[user_keys_map[uid]][ques_keys_map[qid]] = 1
