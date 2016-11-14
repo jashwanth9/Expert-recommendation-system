@@ -71,12 +71,14 @@ def getModels(trainData, question_feats):
 def contentBoosting(user_keys, ques_keys, useritem, usermodels, question_feats):
 	print "boosting"
 	useritem = useritem.toarray()
+	topredict = [question_feats[ques_keys[i]] for i in range(len(ques_keys))]
 	for i in range(0, len(user_keys)):
+		if user_keys[i] not in usermodels:
+			continue
+		predictions = usermodels[user_keys[i]].predict(topredict)
 		for j in range(0, len(ques_keys)):
 			if useritem[i][j] == 0:
-				if user_keys[i] not in usermodels:
-					continue
-				prediction = usermodels[user_keys[i]].predict([question_feats[ques_keys[j]]])[0]
+				prediction = predictions[j]
 				if prediction == 1:
 					useritem[i][j] = 1
 				elif prediction == 0:
@@ -98,7 +100,7 @@ def collabFilteringPredictions(useritem, sparse, k, valData, ques_keys_map, user
 	similarities = cosine_similarity(useritem)
 	scores = []
 	print similarities.shape
-	useritemfull = useritem.toarray()
+	useritemfull = useritem
 	for qid, uid in valData:
 		score = 0
 		for nbindex in similarities[user_keys_map[uid]].argsort()[(-k-1):]:
