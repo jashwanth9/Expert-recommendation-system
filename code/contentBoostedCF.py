@@ -24,6 +24,8 @@ def loadData():
 			valData.append(line.rstrip('\r\n').split(','))
 	ques_keys = pickle.load(open('../train_data/question_info_keys.dat', 'rb'))
 	user_keys = pickle.load(open('../train_data/user_info_keys.dat', 'rb'))
+	user_keys_map = {}
+	ques_keys_map = {}
 	for i in range(len(user_keys)):
 		user_keys_map[user_keys[i]] = i
 	for i in range(len(ques_keys)):
