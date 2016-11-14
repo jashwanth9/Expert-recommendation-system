@@ -40,8 +40,8 @@ def loadData():
 		for line in f1:
 			topic = int(line.split()[1])
 			topics.append(topic)
-	for i in range(len(question_keys)):
-		question_feats[question_keys[i]] = [1 if x == topics[i] else 0 for x in range(22)]
+	for i in range(len(ques_keys)):
+		question_feats[ques_keys[i]] = [1 if x == topics[i] else 0 for x in range(22)]
 	with open('../train_data/invited_info_train.txt', 'r') as f1:
 		for line in f1:
 			line = line.rstrip('\n')
