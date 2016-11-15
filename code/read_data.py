@@ -1,6 +1,7 @@
 import json
 import numpy as np
 import cPickle as pickle
+from scipy import sparse
 from collections import Counter
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfTransformer
@@ -118,7 +119,8 @@ def build_onehot(data, _keys, id_index, file_name):
     for cou in range(len_keys):
         for content in data[_keys[cou]][id_index]:
             zer_vec[cou][content] = 1
-    pickle.dump(zer_vec, open(file_name, "wb"))
+    tags = sparse.csr_matrix(zer_vec)
+    pickle.dump(tags, open(file_name, "wb"))
 
 
 def compute_similarity(file_name, op_file_name):
