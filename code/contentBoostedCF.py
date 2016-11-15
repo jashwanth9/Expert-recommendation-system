@@ -24,18 +24,31 @@ def loadData():
 			valData.append(line.rstrip('\r\n').split(','))
 	ques_keys = pickle.load(open('../train_data/question_info_keys.dat', 'rb'))
 	user_keys = pickle.load(open('../train_data/user_info_keys.dat', 'rb'))
+	user_keys_map = {}
+	ques_keys_map = {}
+	for i in range(len(user_keys)):
+		user_keys_map[user_keys[i]] = i
+	for i in range(len(ques_keys)):
+		ques_keys_map[ques_keys[i]] = i
 	
-	tf = pickle.load(open('../features/ques_charid_tfidf.dat', 'rb'))
-	tfx = tf.toarray()
-	for i in range(len(tfx)):
-		question_feats[ques_keys[i]] = tfx[0].tolist()
+	# tf = pickle.load(open('../features/ques_charid_tfidf.dat', 'rb'))
+	# tfx = tf.toarray()
+	# for i in range(len(tfx)):
+	# 	question_feats[ques_keys[i]] = tfx[0].tolist()
+	topics = []
+	with open('../train_data/question_info.txt', 'r') as f1:
+		for line in f1:
+			topic = int(line.split()[1])
+			topics.append(topic)
+	for i in range(len(ques_keys)):
+		question_feats[ques_keys[i]] = [1 if x == topics[i] else 0 for x in range(22)]
 	with open('../train_data/invited_info_train.txt', 'r') as f1:
 		for line in f1:
 			line = line.rstrip('\n')
 			sp = line.split()
 			trainData.append((sp[0], sp[1], int(sp[2])))
 
-	return useritem_sparse, valData, ques_keys, user_keys, trainData, question_feats
+	return useritem_sparse, valData, ques_keys, user_keys, trainData, question_feats, ques_keys_map, user_keys_map
 
 
 def getModels(trainData, question_feats):
@@ -60,12 +73,14 @@ def getModels(trainData, question_feats):
 def contentBoosting(user_keys, ques_keys, useritem, usermodels, question_feats):
 	print "boosting"
 	useritem = useritem.toarray()
+	topredict = [question_feats[ques_keys[i]] for i in range(len(ques_keys))]
 	for i in range(0, len(user_keys)):
+		if user_keys[i] not in usermodels:
+			continue
+		predictions = usermodels[user_keys[i]].predict(topredict)
 		for j in range(0, len(ques_keys)):
 			if useritem[i][j] == 0:
-				if user_keys[i] not in usermodels:
-					continue
-				prediction = usermodels[user_keys[i]].predict([question_feats[ques_keys[j]]])[0]
+				prediction = predictions[j]
 				if prediction == 1:
 					useritem[i][j] = 1
 				elif prediction == 0:
@@ -78,8 +93,8 @@ def contentBoosting(user_keys, ques_keys, useritem, usermodels, question_feats):
 
 
 
-def collabFilteringPredictions(useritem, sparse, k, valData, ques_keys, user_keys):
-	print "collab filtering"
+def collabFilteringPredictions(useritem, sparse, k, valData, ques_keys_map, user_keys_map):
+	print "getting predictions"
 	#input: useritem matrix
 	#sparese: whether useritem is sparse or not
 	#k : k nearest neighbors to consider
@@ -87,16 +102,13 @@ def collabFilteringPredictions(useritem, sparse, k, valData, ques_keys, user_key
 	similarities = cosine_similarity(useritem)
 	scores = []
 	print similarities.shape
-	if sparse:
-		useritemfull = useritem.toarray()
-	else:
-		useritemfull = useritem
+	useritemfull = useritem
 	for qid, uid in valData:
 		score = 0
-		for nbindex in similarities[user_keys.index(uid)].argsort()[(-k-1):]:
-			if nbindex == user_keys.index(uid): #exclude self
+		for nbindex in similarities[user_keys_map[uid]].argsort()[(-k-1):]:
+			if nbindex == user_keys_map[uid]: #exclude self
 				continue
-			score += useritemfull[nbindex][ques_keys.index(qid)]*similarities[user_keys.index(uid)][nbindex]
+			score += useritemfull[nbindex][ques_keys_map[qid]]*similarities[user_keys_map[uid]][nbindex]
 		scores.append(score)
 
 	predictions = []
@@ -109,12 +121,12 @@ def collabFilteringPredictions(useritem, sparse, k, valData, ques_keys, user_key
 
 	return predictions
 
-k = 20
+k = 180
 
-useritem_sparse, valData, ques_keys, user_keys, trainData, question_feats = loadData()
+useritem_sparse, valData, ques_keys, user_keys, trainData, question_feats, ques_keys_map, user_keys_map = loadData()
 usermodels = getModels(trainData, question_feats)
 useritem = contentBoosting(user_keys, ques_keys, useritem_sparse, usermodels, question_feats)
-predictions = collabFilteringPredictions(useritem, False, k, valData, ques_keys, user_keys)
+predictions = collabFilteringPredictions(useritem, False, k, valData, ques_keys_map, user_keys_map)
 
 with open('../validation/content_boosted_'+str(k)+'.csv', 'w') as f1:
 	f1.write('qid,uid,label\n')
