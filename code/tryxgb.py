@@ -1,7 +1,7 @@
 import numpy as np
 import xgboost as xgb
 import cPickle as pickle
-from scipy.sparse import hstack, coo_matrix
+from scipy.sparse import hstack, coo_matrix, vstack
 
 
 ## data
@@ -14,6 +14,7 @@ ques_tags = pickle.load(open('../features/ques_tags.dat', 'rb'))
 #ques_charid = ques_charid.toarray()
 #ques_wordid = ques_wordid.toarray()
 for i in range(len(question_keys)):
+	# question_feats[question_keys[i]] = ques_charid[i]
 	question_feats[question_keys[i]] = [ques_tags[i], ques_charid[i], ques_wordid[i]]
 
 user_feats = {}
@@ -25,6 +26,7 @@ user_tags = pickle.load(open('../features/user_tags.dat', 'rb'))
 #user_charid = user_charid.toarray()
 #user_wordid = user_wordid.toarray()
 for i in range(len(user_keys)):
+	# user_feats[user_keys[i]] = ser_charid[i]
 	user_feats[user_keys[i]] = [user_tags[i], user_charid[i], user_wordid[i]]
 
 
@@ -34,18 +36,25 @@ with open('../train_data/invited_info_train.txt') as train_file:
 	content = train_file.readlines()
 
 element = content[0].strip("\n").split("\t")
-#no_feats = (len(question_feats[element[0]][0])+len(user_feats[element[1]][0]) 
-#			+ len(question_feats[element[0]][1])+len(user_feats[element[1]][1])
-#			+ len(question_feats[element[0]][2])+len(user_feats[element[1]][2]))
-
-data = coo_matrix(shape=(len(content), 58181))
+no_feats = (question_feats[element[0]][0].shape[1]
+			+ user_feats[element[1]][0].shape[1]
+			+ question_feats[element[0]][1].shape[1]
+			+ user_feats[element[1]][1].shape[1]
+			+ question_feats[element[0]][2].shape[1]
+			+ user_feats[element[1]][2].shape[1])
+print no_feats
+# data = coo_matrix((len(content), no_feats))
+data = hstack([question_feats[element[0]][0], user_feats[element[1]][0], 
+						question_feats[element[0]][1], user_feats[element[1]][1],
+						question_feats[element[0]][2], user_feats[element[1]][2]])
 label = np.zeros(shape=(len(content),1))
 
-for i in range(len(content)):
+for i in range(1,len(content)):
 	element = content[i].strip("\n").split("\t")
-	data[i] = hstack((question_feats[element[0]][0], user_feats[element[1]][0], 
+	data_r =  hstack([question_feats[element[0]][0], user_feats[element[1]][0], 
 						question_feats[element[0]][1], user_feats[element[1]][1],
-						question_feats[element[0]][2], user_feats[element[1]][2]))
+						question_feats[element[0]][2], user_feats[element[1]][2]])
+	data = vstack([data, data_r])
 	label[i]= element[2]
 
 
@@ -65,16 +74,17 @@ with open('../train_data/validate_nolabel.txt') as train_file:
 	content = train_file.readlines()
 testData = []
 element = content[1].strip("\r\n").split(",")
-#no_feats = (len(question_feats[element[0]][0])+len(user_feats[element[1]][0]) 
-#			+ len(question_feats[element[0]][1])+len(user_feats[element[1]][1])
-#			+ len(question_feats[element[0]][2])+len(user_feats[element[1]][2]))
-data = coo_matrix(shape=(len(content)-1, 58181))
-for i in range(1, len(content)):
+data = hstack([question_feats[element[0]][0], user_feats[element[1]][0], 
+						question_feats[element[0]][1], user_feats[element[1]][1],
+						question_feats[element[0]][2], user_feats[element[1]][2]])
+
+for i in range(2, len(content)):
 	element = content[i].strip("\r\n").split(",")
 	testData.append(element)
-	data[i-1] = hstack((question_feats[element[0]][0], user_feats[element[1]][0], 
+	data_r =  hstack([question_feats[element[0]][0], user_feats[element[1]][0], 
 						question_feats[element[0]][1], user_feats[element[1]][1],
-						question_feats[element[0]][2], user_feats[element[1]][2]))
+						question_feats[element[0]][2], user_feats[element[1]][2]])
+	data = vstack([data, data_r])
 
 print data.shape
 dtest = xgb.DMatrix(data)
