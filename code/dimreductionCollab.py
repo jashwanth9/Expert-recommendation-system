@@ -6,34 +6,89 @@ import pdb
 import warnings
 from scipy import sparse
 import cPickle as pickle
-from numpy.linalg import svd
+from scipy.sparse.linalg import svds
+from scipy.linalg import sqrtm
+import evaluate
+
 
 def loadData():
-	useritem_sparse = pickle.load(open('../features/useritemmatrix_normalized.dat', 'rb'))
-	valData = []
-	question_feats = {}
+	# useritem_sparse = pickle.load(open('../features/useritemmatrix_normalized.dat', 'rb'))
+	# valData = []
+	# question_feats = {}
 
-	with open('../train_data/validate_nolabel.txt', 'r') as f1:
-		header = f1.readline()
-		for line in f1:
-			valData.append(line.rstrip('\r\n').split(','))
+	# with open('../train_data/validate_nolabel.txt', 'r') as f1:
+	# 	header = f1.readline()
+	# 	for line in f1:
+	# 		valData.append(line.rstrip('\r\n').split(','))
 	ques_keys = pickle.load(open('../train_data/question_info_keys.dat', 'rb'))
 	user_keys = pickle.load(open('../train_data/user_info_keys.dat', 'rb'))
-
-	return useritem_sparse, valData, ques_keys, user_keys
+	ques_keys_map = {}
+	user_keys_map = {}
+	for i in range(len(user_keys)):
+		user_keys_map[user_keys[i]] = i
+	for i in range(len(ques_keys)):
+		ques_keys_map[ques_keys[i]] = i
+	return ques_keys_map, user_keys_map
 
 
 def getReducedMatrix(useritem_sparse, k):
-	useritem = useritem_sparse.toarray()
-	u, s, v = svd(useritem)
-	sk = s[:k]
-	uk = u[:k, :k]
-	vk = v[:k, :k]
-	pdb.set_trace()
+	print 'svd decomposition'
+	#useritem = useritem_sparse.toarray()
+	u, s, v = svds(useritem_sparse, k)
+	sf = np.zeros(shape=(k, k))
+	for i in range(k):
+		sf[i][i] = s[i]
+	hsf = sqrtm(sf)
+	uf = np.matmul(u, hsf)
+	vf = np.matmul(hsf, v)
+	vf = vf.T
+	#pdb.set_trace()
+	#sk = s[:k]
+	#uk = u[:k, :k]
+	#vk = v[:k, :k]
+	return (uf, vf)
+
+def getUserItemMatrix(trainData, ques_keys_map, user_keys_map):
+	print "getting useritem matrix"
+	useritem = np.zeros(shape=(len(user_keys_map), len(ques_keys_map)))
+	for qid, uid, val in trainData:
+		if val == '1' or val==1:
+			useritem[user_keys_map[uid]][ques_keys_map[qid]] = 1
+				#posc+=1
+		else:
+			useritem[user_keys_map[uid]][ques_keys_map[qid]] = -0.125
+	uisparse = sparse.csr_matrix(useritem)
+	return uisparse
+
+def getPredictions(valData, userf, itemf, ques_keys_map, user_keys_map):
+	print 'getting predictions'
+	scores = []
+	for qid, uid in valData:
+		score = np.dot(userf[user_keys_map[uid]], itemf[ques_keys_map[qid]])
+		scores.append(score)
+	#print scores
+	predictions = []
+
+	#normalization
+	maxscore = max(scores)
+	minscore = min(scores)
+	for score in scores:
+		predictions.append((score-minscore)/float(maxscore-minscore))
+
+	return predictions
 
 
+def run(trainData, valData, k, foldno):
+	#useritem_sparse, valData, ques_keys_map, user_keys_map = loadData()
+	ques_keys_map, user_keys_map = loadData()
+	useritem_sparse = getUserItemMatrix(trainData, ques_keys_map, user_keys_map)
+	userf, itemf = getReducedMatrix(useritem_sparse, k)
+	predictions = getPredictions(valData, userf, itemf, ques_keys_map, user_keys_map)
 
+	fname = '../localvalidation/svd_'+str(k)+'_'+str(foldno)+'.csv'
+	with open(fname, 'w') as f1:
+		f1.write('qid,uid,label\n')
+		for i in range(0, len(predictions)):
+			f1.write(valData[i][0]+','+valData[i][1]+','+str(predictions[i])+'\n')
 
-
-useritem_sparse, valData, ques_keys, user_keys = loadData()
-getReducedMatrix(useritem_sparse, k=14)
+	return evaluate.ndcg(fname)
