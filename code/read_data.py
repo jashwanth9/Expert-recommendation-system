@@ -1,6 +1,7 @@
 import json
 import numpy as np
 import cPickle as pickle
+from scipy import sparse
 from collections import Counter
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfTransformer
@@ -111,6 +112,17 @@ def build_tfidf_que_word(data, _keys, id_index, file_name):
     # pickle.dump(tfidf_dict, open(file_name, "wb"))
 
 
+def build_onehot(data, _keys, id_index, file_name):
+    max_val = np.max(get_all_val_col(data.values(), id_index))
+    len_keys = len(_keys)
+    zer_vec = np.zeros((len_keys, max_val+1))
+    for cou in range(len_keys):
+        for content in data[_keys[cou]][id_index]:
+            zer_vec[cou][content] = 1
+    tags = sparse.csr_matrix(zer_vec)
+    pickle.dump(tags, open(file_name, "wb"))
+
+
 def compute_similarity(file_name, op_file_name):
     tfidf_matrix = pickle.load(open(file_name, 'rb'))
     similarities = cosine_similarity(tfidf_matrix)
@@ -124,6 +136,9 @@ if __name__ == "__main__":
     question_info_data, question_info_keys = read_files('../train_data/question_info.txt')
     print(np.max(get_all_val_col(user_info_data.values(), id_index)))
     print(np.max(get_all_val_col(question_info_data.values(), id_index)))
+    build_onehot(user_info_data, user_info_keys, id_index, '../features/user_tags.dat')
+    build_onehot(question_info_data, question_info_keys, id_index, '../features/ques_tags.dat')
+
     # invited_info_train_data = read_invited_info()
     
     # print user_info_data[user_info_keys[0]][id_index]
