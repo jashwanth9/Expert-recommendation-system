@@ -4,14 +4,14 @@ import cPickle as pickle
 import evaluate
 from scipy.sparse import hstack, coo_matrix, vstack
 
-def train_xgb(dtrain, dtest, num_round, param, fileattr, testData):
+def train_xgb(dtrain, dtest, num_round, param, file_subname, testData):
 	# Training
 	bst = xgb.train(param, dtrain, num_round)
 	# Prediction
 	ypred = bst.predict(dtest)
 	# If early stopping is enabled during training, you can get predicticions from the best iteration with bst.best_ntree_limit:
 	# ypred = bst.predict(xgmat,ntree_limit=bst.best_ntree_limit)
-	name = '../temp/v_xgb_tagword_'+str(fileattr)+'.csv'
+	name = '../temp/v_xgb_tagword_'+str(file_subname)+'.csv'
 	with open(name, 'w') as f1:
 		f1.write('qid,uid,label\n')
         	for i in range(0, len(ypred)):
@@ -68,25 +68,35 @@ for i in range(N):
 print(data.shape)
 print(label.shape)
 
-param = {'objective':'binary:logistic', 'max_depth':'40', 'eta':'0.18', 'silent':1 }
-num_round = 50
-rounds = [1000,500,200,50]
-folds = 8
-#max_depth = [20, 30, 40, 50, 70, 90]
-for rou in rounds:
-	#param['max_depth'] = depth
-	res = 0
-	#for i in range(folds):
-	i = 0
-	test_data = np.vstack((data[:(i)*(N/folds)], data[(i+1)*(N/folds):]))
-	test_label = np.vstack((label[:(i)*(N/folds)], label[(i+1)*(N/folds):]))
-	val_data = data[i*(N/folds):(i+1)*(N/folds)]
-	testData1 = testData[i*(N/folds):(i+1)*(N/folds)]
+param = {'booster':'dart', 'objective':'binary:logistic', 'max_depth':'40', 'eta':'0.18', 'silent':0 }
+num_round = 100
+sample_type = ["uniform", "weighted"]
+normalize_type = ["tree", "forest"]
+rate_drop = [0.1, 0.2, 0.5]
+skip_drop = [0.1, 0.3, 0.6, 0.9]
 
-	dtrain = xgb.DMatrix(test_data, label=test_label)
-	dtest = xgb.DMatrix(val_data)
-	res = train_xgb(dtrain, dtest, rou, param, rou, testData1)
-	print("For number of iterations:- "+str(rou)+" Result :-" +str(res)+"\n")
+folds = 8
+for st in sample_type:
+	param['sample_type'] = st
+	for nt in normalize_type:
+		param['normalize_type'] = nt
+		for rd in rate_drop:
+			param['rate_drop'] = rd
+			for sd in skip_drop:
+				param['skip_drop'] = sd
+				res = 0
+				#for i in range(folds):
+				i = 0
+				test_data = np.vstack((data[:(i)*(N/folds)], data[(i+1)*(N/folds):]))
+				test_label = np.vstack((label[:(i)*(N/folds)], label[(i+1)*(N/folds):]))
+				val_data = data[i*(N/folds):(i+1)*(N/folds)]
+				testData1 = testData[i*(N/folds):(i+1)*(N/folds)]
+
+				dtrain = xgb.DMatrix(test_data, label=test_label)
+				dtest = xgb.DMatrix(val_data)
+				file_subname = st+nt+str(rd)+str(sd)
+				res = train_xgb(dtrain, dtest, rou, param, file_subname, testData1)
+				print("Dart Booster sample_type:- "+st+"norm_type:- "+nt+"rate_drop:- "+str(rd)+"skip drop:- "+str(sd)+" Result :-" +str(res)+"\n")
 
 
 
