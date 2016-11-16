@@ -51,8 +51,8 @@ def loadData():
 def expectation(alphas, betas, mixes, k):
 	gammas = []
 	totgammas = np.zeros(shape=(len(alphas), len(betas), 2))
-	a = np.matmul(alphas, betas.T[0])
-	b = np.matmul(alphas, betas.T[1])
+	a = np.matmul(alphas, betas.T[0].reshape(1, len(betas)))
+	b = np.matmul(alphas, betas.T[1].reshape(1, len(betas)))
 	ab = np.dstack((a, b))
 	for i in range(k):
 		gammas.append(mixes[i]*ab)
