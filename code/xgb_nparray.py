@@ -20,23 +20,23 @@ question_feats = {}
 question_keys = pickle.load(open('../features/question_info_keys.dat', 'rb'))
 tf1 = pickle.load(open('../features/ques_charid_tfidf.dat', 'rb'))
 ques_tags = pickle.load(open('../features/ques_tags.dat', 'rb'))
-ques_wordid = pickle.load(open('../features/ques_wordid_tfidf.dat', 'rb'))
-# tf1 = tf1.toarray()
-# ques_tags = ques_tags.toarray()
+# ques_wordid = pickle.load(open('../features/ques_wordid_tfidf.dat', 'rb'))
+tf1 = tf1.toarray()
+ques_tags = ques_tags.toarray()
 # ques_wordid = ques_wordid.toarray()
 for i in range(len(tf1)):
-	question_feats[question_keys[i]] = hstack([tf1[i], ques_tags[i], ques_wordid[i]])
+	question_feats[question_keys[i]] = hstack([tf1[i], ques_tags[i]])
 
 user_feats = {}
 user_keys = pickle.load(open('../features/user_info_keys.dat', 'rb'))
 tf2 = pickle.load(open('../features/user_charid_tfidf.dat', 'rb'))
 user_tags = pickle.load(open('../features/user_tags.dat', 'rb'))
-user_wordid = pickle.load(open('../features/user_wordid_tfidf.dat', 'rb'))
+# user_wordid = pickle.load(open('../features/user_wordid_tfidf.dat', 'rb'))
 # user_wordid = user_wordid.toarray()
-# tf2 = tf2.toarray()
-# user_tags = user_tags.toarray()
+tf2 = tf2.toarray()
+user_tags = user_tags.toarray()
 for i in range(len(tf2)):
-	user_feats[user_keys[i]] = hstack([tf2[i], user_tags[i], user_wordid[i]])
+	user_feats[user_keys[i]] = hstack([tf2[i], user_tags[i]])
 
 
 
