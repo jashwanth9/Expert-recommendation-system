@@ -6,7 +6,7 @@ import content_based_tags
 import collabFiltering_cross
 import pymp
 import copy
-
+import dimreductionCollab
 
 
 
@@ -34,15 +34,17 @@ def cv(k):
 
 			#r = content_based_tags.run(td, valData)
 			#r =  random_value_testing.run(td, valData, i, k)
-			r = collabFiltering_cross.run(td, valData, i, k)
+			r = dimreductionCollab.run(td, valData, k, i)
+			#print r
+			#r = collabFiltering_cross.run(td, valData, i, k)
 			with p.lock:
 				rp.append(r)
 			
 	print rp
-	with open('cvkcollab.txt', 'a') as f1:
+	with open('svd.txt', 'a') as f1:
 		f1.write(str(k)+','+str(np.mean(rp))+'\n')
 
 
-for k in range(10, 201, 10):
+for k in range(1, 5):
 	print k
 	cv(k)
