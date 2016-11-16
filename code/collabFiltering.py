@@ -15,7 +15,7 @@ def loadData():
 	question_feats = {}
 	trainData = []
 
-	with open('../train_data/validate_nolabel.txt', 'r') as f1:
+	with open('../train_data/test_nolabel.txt', 'r') as f1:
 		header = f1.readline()
 		for line in f1:
 			valData.append(line.rstrip('\r\n').split(','))
@@ -73,7 +73,7 @@ k = 180
 useritem_sparse, valData, ques_keys_map, user_keys_map = loadData()
 predictions = collabFilteringPredictions(useritem_sparse, True, k, valData, ques_keys_map, user_keys_map)
 
-with open('../validation/collab_norm_excludingself'+str(k)+'.csv', 'w') as f1:
+with open('../testsubmissions/collab_cosine_excludingself'+str(k)+'.csv', 'w') as f1:
 	f1.write('qid,uid,label\n')
 	for i in range(0, len(predictions)):
 		f1.write(valData[i][0]+','+valData[i][1]+','+str(predictions[i])+'\n')

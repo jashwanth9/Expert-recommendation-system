@@ -7,6 +7,21 @@ import cPickle as pickle
 import random
 import evaluate
 
+
+def loadTrainTestData():
+	trainData = []
+	with open('../train_data/invited_info_train.txt', 'r') as f1:
+		for line in f1:
+			line = line.rstrip('\n')
+			sp = line.split()
+			trainData.append((sp[0], sp[1], int(sp[2])))
+	testData = []
+	with open('../train_data/test_nolabel.txt', 'r') as f1:
+		line = f1.readline()
+		for line in f1:
+			testData.append(line.rstrip('\r\n').split(','))
+	return trainData, testData
+
 def loadData():
 	print "loading data"
 	question_keys = pickle.load(open('../features/question_info_keys.dat', 'rb'))
@@ -37,8 +52,8 @@ def loadData():
 	# 		question_feats[question_keys[i]] = map(int, sp[4:7])
 	# 		i += 1
 	for i in range(len(question_keys)):
-		question_feats[question_keys[i]] = [1 if x == topics[i] else 0 for x in range(22)]
-		#question_feats[question_keys[i]] = [1, 1, 1]
+		#question_feats[question_keys[i]] = [1 if x == topics[i] else 0 for x in range(22)]
+		question_feats[question_keys[i]] = [1, 1, 1]
 
 	#tf2 = pickle.load(open('../features/ques_wordid_tfidf.dat', 'rb'))
 	#tfx2 = tf2.toarray()
@@ -103,11 +118,14 @@ def run(trainData, valData):
 	question_feats = loadData()
 	nbmodels = getModels(trainData, question_feats)
 	predictions = getPredictions(valData, nbmodels, question_feats)
-	fname = '../localvalidation/content_ques_topics.csv'
+	fname = '../testsubmissions/content_ques_nofeat.csv'
 	with open(fname , 'w') as f1:
 		f1.write('qid,uid,label\n')
 		for i in range(0, len(predictions)):
 			f1.write(valData[i][0]+','+valData[i][1]+','+str(predictions[i])+'\n')
+	return
+	#return evaluate.ndcg(fname)
 
-	return evaluate.ndcg(fname)
-#print evaluate.accuracy(fname)
+if __name__ == "__main__":
+	trainData, testData = loadTrainTestData()
+	run(trainData, testData)
