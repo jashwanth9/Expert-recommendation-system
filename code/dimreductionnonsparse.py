@@ -20,9 +20,9 @@ def loadTrainTestData():
 			trainData.append((sp[0], sp[1], int(sp[2])))
 	testData = []
 	with open('../train_data/localvalidation.txt', 'r') as f1:
-		line = f1.readline()
+		#line = f1.readline()
 		for line in f1:
-			testData.append(line.rstrip('\r\n').split(','))
+			testData.append(line.rstrip('\r\n').split(',')[:2])
 	return trainData, testData
 
 def loadData():
@@ -72,7 +72,7 @@ def getUserItemMatrix(trainData, ques_keys_map, user_keys_map):
 		else:
 			useritem[user_keys_map[uid]][ques_keys_map[qid]] = -0.125
 	for i in range(len(useritem[0])):
-		useritem[:, i] = useritem[:, i] - np.mean(useritem[:, i])
+		useritem[:, i] = useritem[:, i] + np.mean(useritem[:, i])
 	uisparse = sparse.csr_matrix(useritem)
 	return uisparse
 
@@ -101,13 +101,13 @@ def run(trainData, valData, k, foldno):
 	userf, itemf = getReducedMatrix(useritem_sparse, k)
 	predictions = getPredictions(valData, userf, itemf, ques_keys_map, user_keys_map)
 
-	fname = '../localvalidation/svd_'+str(k)+'_'+str(foldno)+'.csv'
+	fname = '../localvalidation/svdnonspare_'+str(k)+'_'+str(foldno)+'.csv'
 	with open(fname, 'w') as f1:
 		f1.write('qid,uid,label\n')
 		for i in range(0, len(predictions)):
 			f1.write(valData[i][0]+','+valData[i][1]+','+str(predictions[i])+'\n')
 
-	#return evaluate.ndcg(fname)
+	return evaluate.ndcg(fname)
 
 trainData, testData = loadTrainTestData()
-run(trainData, testData, 50, 0)
+print run(trainData, testData, 50, 0)
