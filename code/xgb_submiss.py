@@ -67,11 +67,11 @@ with open('../train_data/validate_nolabel.txt') as train_file:
 	content = train_file.readlines()
 testData = []
 element = content[1].strip("\r\n").split(",")
-tdata = np.zeros(shape=(len(content)-1, len(question_feats[element[0]])+len(user_feats[element[1]])))
+tdata = np.zeros(shape=(len(content)-1, question_feats[element[0]].shape[1] + user_feats[element[1]].shape[1]))
 for i in range(1, len(content)):
 	element = content[i].strip("\r\n").split(",")
 	testData.append(element)
-	tdata[i-1] = np.hstack((question_feats[element[0]], user_feats[element[1]]))
+	tdata[i-1] = np.hstack((question_feats[element[0]].toarray(), user_feats[element[1]].toarray()))
 print tdata.shape
 
 
@@ -98,7 +98,7 @@ res = train_xgb(dtrain, dtest, num_round, param)
 
 ypred = res
 
-with open('../validation/v_xgboost_word_tfidf.csv', 'w') as f1:
+with open('../validation/v_xgboost_dart_forest.csv', 'w') as f1:
 	f1.write('qid,uid,label\n')
 	for i in range(0, len(ypred)):
 		f1.write(testData[i][0]+','+testData[i][1]+','+str(ypred[i])+'\n')
