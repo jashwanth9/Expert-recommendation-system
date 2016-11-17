@@ -142,9 +142,9 @@ def getPredictions(valData, nbmodels, question_feats, useritem, user_keys_map, u
 		score = score/k
 		prob = nbmodels[uid].predict_proba([question_feats[qid]])
 		if nbmodels[uid].classes_[0] == 1:
-			predictions.append(prob[0][0]*0.5 + score*0.43)
+			predictions.append(prob[0][0]*0.7 + score*0.43)
 		elif len(prob[0])>1:
-			predictions.append(prob[0][1]*0.5 + score*0.5)
+			predictions.append(prob[0][1]*0.7 + score*0.5)
 		else:
 			predictions.append(alt_score)
 		#if predictions[-1] <= 0:
