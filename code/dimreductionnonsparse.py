@@ -13,16 +13,16 @@ import evaluate
 
 def loadTrainTestData():
 	trainData = []
-	with open('../train_data/localtraining.txt', 'r') as f1:
+	with open('../train_data/invited_info_train.txt', 'r') as f1:
 		for line in f1:
 			line = line.rstrip('\n')
 			sp = line.split()
 			trainData.append((sp[0], sp[1], int(sp[2])))
 	testData = []
-	with open('../train_data/localvalidation.txt', 'r') as f1:
-		#line = f1.readline()
+	with open('../train_data/validate_nolabel.txt', 'r') as f1:
+		line = f1.readline()
 		for line in f1:
-			testData.append(line.rstrip('\r\n').split()[:2])
+			testData.append(line.rstrip('\r\n').split(',')[:2])
 	return trainData, testData
 
 def loadData():
@@ -110,7 +110,7 @@ def run(trainData, valData, k, foldno):
 	userf, itemf = getReducedMatrix(useritem_sparse, k)
 	predictions = getPredictions(valData, userf, itemf, ques_keys_map, user_keys_map, cbar)
 
-	fname = '../localvalidation/svdnonspare_'+str(k)+'_'+str(foldno)+'.csv'
+	fname = '../validation/svdnonspare_'+str(k)+'_'+str(foldno)+'.csv'
 	with open(fname, 'w') as f1:
 		f1.write('qid,uid,label\n')
 		for i in range(0, len(predictions)):
