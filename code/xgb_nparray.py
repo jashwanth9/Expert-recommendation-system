@@ -71,9 +71,9 @@ print(label.shape)
 param = {'booster':'dart', 'objective':'binary:logistic', 'max_depth':'40', 'eta':'0.18', 'silent':0 }
 num_round = 100
 sample_type = ["uniform", "weighted"]
-normalize_type = ["tree", "forest"]
-rate_drop = [0.1, 0.2, 0.5]
-skip_drop = [0.1, 0.3, 0.6, 0.9]
+normalize_type = ["forest"]
+rate_drop = [0.1]
+skip_drop = [0.1]
 
 folds = 8
 for st in sample_type:
