@@ -74,7 +74,7 @@ def getUserItemMatrix(trainData, ques_keys_map, user_keys_map):
 	for i in range(len(useritem[0])):
 		useritem[:, i] = useritem[:, i] - np.mean(useritem[:, i])
 	uisparse = sparse.csr_matrix(useritem)
-	return useritem
+	return uisparse
 
 def getPredictions(valData, userf, itemf, ques_keys_map, user_keys_map):
 	print 'getting predictions'
