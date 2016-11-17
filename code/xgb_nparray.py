@@ -95,7 +95,7 @@ for st in sample_type:
 				dtrain = xgb.DMatrix(test_data, label=test_label)
 				dtest = xgb.DMatrix(val_data)
 				file_subname = st+nt+str(rd)+str(sd)
-				res = train_xgb(dtrain, dtest, rou, param, file_subname, testData1)
+				res = train_xgb(dtrain, dtest, num_round, param, file_subname, testData1)
 				print("Dart Booster sample_type:- "+st+"norm_type:- "+nt+"rate_drop:- "+str(rd)+"skip drop:- "+str(sd)+" Result :-" +str(res)+"\n")
 
 
