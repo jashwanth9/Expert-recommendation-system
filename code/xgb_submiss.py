@@ -63,7 +63,7 @@ print(data.shape)
 print(label.shape)
 
 # Test data
-with open('../train_data/validate_nolabel.txt') as train_file:
+with open('../train_data/test_nolabel.txt') as train_file:
 	content = train_file.readlines()
 testData = []
 element = content[1].strip("\r\n").split(",")
@@ -76,8 +76,8 @@ print tdata.shape
 
 
 
-param = {'booster':'dart', 'sample_type':'uniform' , 'objective':'binary:logistic', 'normalize_type':'forest', 'max_depth':'40', 'eta':'0.18', 'rate_drop':'0.1', 'skip_drop':'0.1'}
-num_round = 300
+param = {'booster':'dart', 'sample_type':'uniform' , 'objective':'binary:logistic', 'normalize_type':'forest', 'max_depth':'70', 'eta':'0.1', 'rate_drop':'0.27', 'skip_drop':'0.5'}
+num_round = 200
 
 
 dtrain = xgb.DMatrix(data, label=label)
@@ -98,7 +98,7 @@ res = train_xgb(dtrain, dtest, num_round, param)
 
 ypred = res
 
-with open('../validation/v_xgboost_dart_forest.csv', 'w') as f1:
+with open('../validation/t_xgboost_dart_forest.csv', 'w') as f1:
 	f1.write('qid,uid,label\n')
 	for i in range(0, len(ypred)):
 		f1.write(testData[i][0]+','+testData[i][1]+','+str(ypred[i])+'\n')
