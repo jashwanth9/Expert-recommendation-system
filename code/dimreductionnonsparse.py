@@ -71,16 +71,24 @@ def getUserItemMatrix(trainData, ques_keys_map, user_keys_map):
 				#posc+=1
 		else:
 			useritem[user_keys_map[uid]][ques_keys_map[qid]] = -0.125
-	for i in range(len(useritem[0])):
-		useritem[:, i] = useritem[:, i] + np.mean(useritem[:, i])
+	Cbar = np.mean(useritem)
+	itemave = np.mean(useritem, axis=0)
+	for i in range(len(useritem)):
+		for j in range(len(useritem[0])):
+			if useritem[i][j] == 0:
+				useritem[i][j] = itemave[j] - Cbar
+	# for i in range(len(useritem[0])):
+	# 	for j in range(len(useritem[1]))
+	# 	useritem[:, i] = useritem[:, i] + np.mean(useritem[:, i])
+	# 
 	uisparse = sparse.csr_matrix(useritem)
-	return uisparse
+	return uisparse, Cbar
 
-def getPredictions(valData, userf, itemf, ques_keys_map, user_keys_map):
+def getPredictions(valData, userf, itemf, ques_keys_map, user_keys_map. cbar):
 	print 'getting predictions'
 	scores = []
 	for qid, uid in valData:
-		score = np.dot(userf[user_keys_map[uid]], itemf[ques_keys_map[qid]])
+		score = np.dot(userf[user_keys_map[uid]], itemf[ques_keys_map[qid]]) + cbar
 		scores.append(score)
 	#print scores
 	predictions = []
@@ -97,9 +105,9 @@ def getPredictions(valData, userf, itemf, ques_keys_map, user_keys_map):
 def run(trainData, valData, k, foldno):
 	#useritem_sparse, valData, ques_keys_map, user_keys_map = loadData()
 	ques_keys_map, user_keys_map = loadData()
-	useritem_sparse = getUserItemMatrix(trainData, ques_keys_map, user_keys_map)
+	useritem_sparse, cbar = getUserItemMatrix(trainData, ques_keys_map, user_keys_map)
 	userf, itemf = getReducedMatrix(useritem_sparse, k)
-	predictions = getPredictions(valData, userf, itemf, ques_keys_map, user_keys_map)
+	predictions = getPredictions(valData, userf, itemf, ques_keys_map, user_keys_map, cbar)
 
 	fname = '../localvalidation/svdnonspare_'+str(k)+'_'+str(foldno)+'.csv'
 	with open(fname, 'w') as f1:
