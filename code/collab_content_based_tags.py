@@ -123,8 +123,10 @@ def getPredictions(valData, nbmodels, question_feats, useritem, user_keys_map, u
 			continue
 
 		score = 0
+		y = 0
 		for nbindex in similarities[user_keys_map[uid]].argsort()[(-k-1):]:
 			if user_keys[nbindex] not in nbmodels:
+				y+=1
 				sc = 0
 				continue
 			prob = nbmodels[user_keys[nbindex]].predict_proba([question_feats[qid]])
@@ -133,16 +135,18 @@ def getPredictions(valData, nbmodels, question_feats, useritem, user_keys_map, u
 			elif len(prob[0])>1:
 				sc = prob[0][1]
 			else:
+				y+=1
 				sc = 0
 			score += sc
+		alt_score = score/(k-y)
 		score = score/k
 		prob = nbmodels[uid].predict_proba([question_feats[qid]])
 		if nbmodels[uid].classes_[0] == 1:
-			predictions.append(prob[0][0]*0.5 + score*0.5)
+			predictions.append(prob[0][0]*0.5 + score*0.43)
 		elif len(prob[0])>1:
 			predictions.append(prob[0][1]*0.5 + score*0.5)
 		else:
-			predictions.append(0 + score*0.5)
+			predictions.append(alt_score)
 		#if predictions[-1] <= 0:
 			#predictions[-1] = 0.111
 	return predictions
