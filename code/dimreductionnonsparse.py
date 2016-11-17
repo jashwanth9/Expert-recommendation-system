@@ -22,7 +22,7 @@ def loadTrainTestData():
 	with open('../train_data/localvalidation.txt', 'r') as f1:
 		#line = f1.readline()
 		for line in f1:
-			testData.append(line.rstrip('\r\n').split(',')[:2])
+			testData.append(line.rstrip('\r\n').split()[:2])
 	return trainData, testData
 
 def loadData():
