@@ -76,8 +76,8 @@ print tdata.shape
 
 
 
-param = {'booster':'dart', 'sample_type':'uniform' , 'objective':'binary:logistic', 'normalize_type':'forest', 'max_depth':'70', 'eta':'0.1', 'rate_drop':'0.27', 'skip_drop':'0.5'}
-num_round = 200
+param = {'booster':'dart', 'sample_type':'weighted' , 'objective':'binary:logistic', 'normalize_type':'forest', 'max_depth':'70', 'eta':'0.18', 'rate_drop':'0.27', 'skip_drop':'0.5'}
+num_round = 100
 
 
 dtrain = xgb.DMatrix(data, label=label)
