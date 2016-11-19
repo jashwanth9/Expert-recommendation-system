@@ -116,15 +116,17 @@ def getPredictions(valData, nbmodels, question_feats, useritem, user_keys_map, u
 	predictions = []
 	i = 0
 	for qid, uid in valData:
-		print i
-		i += 1
+		# print i
+		# i += 1
 		if uid not in nbmodels:
 			predictions.append(0)
 			continue
 
 		score = 0
+		y = 0
 		for nbindex in similarities[user_keys_map[uid]].argsort()[(-k-1):]:
 			if user_keys[nbindex] not in nbmodels:
+				y+=1
 				sc = 0
 				continue
 			prob = nbmodels[user_keys[nbindex]].predict_proba([question_feats[qid]])
@@ -133,19 +135,25 @@ def getPredictions(valData, nbmodels, question_feats, useritem, user_keys_map, u
 			elif len(prob[0])>1:
 				sc = prob[0][1]
 			else:
+				y+=1
 				sc = 0
 			score += sc
+
+		alt_score = score/(k-y)
 		score = score/k
+		# print("score:- ", score)
+		# print("altscore:-", alt_score)
 		prob = nbmodels[uid].predict_proba([question_feats[qid]])
 		if nbmodels[uid].classes_[0] == 1:
-			predictions.append(prob[0][0]*0.5 + score*0.5)
+			predictions.append(prob[0][0]*0.75 + alt_score*0.43)
 		elif len(prob[0])>1:
-			predictions.append(prob[0][1]*0.5 + score*0.5)
+			predictions.append(prob[0][1]*0.75 + alt_score*0.5)
 		else:
-			predictions.append(0 + score*0.5)
+			predictions.append(alt_score*2)
 		#if predictions[-1] <= 0:
 			#predictions[-1] = 0.111
-	return predictions
+	# print np.median(predictions)
+	# return predictions
 
 
 def run(trainData, valData):
@@ -153,13 +161,13 @@ def run(trainData, valData):
 	question_feats, useritem_sparse, user_keys_map, user_keys = loadData()
 	nbmodels = getModels(trainData, question_feats)
 	predictions = getPredictions(valData, nbmodels, question_feats, useritem_sparse, user_keys_map, user_keys, k)
-	fname = '../validation/v_collab_cont_ques_topics.csv'
+	fname = '../validation/v_collab_alt_score.csv'
 	with open(fname , 'w') as f1:
 		f1.write('qid,uid,label\n')
 		for i in range(0, len(predictions)):
 			f1.write(valData[i][0]+','+valData[i][1]+','+str(predictions[i])+'\n')
-	return
-	#return evaluate.ndcg(fname)
+	#return
+	return evaluate.ndcg(fname)
 
 if __name__ == "__main__":
 	trainData, testData = loadTrainTestData()
