@@ -37,16 +37,17 @@ def cv(k):
 			#r =  random_value_testing.run(td, valData, i, k)
 			# r = dimreductionCollab.run(td, valData, k, i)
 			r = collab_content_based_tags.run(td, valData)
-			print r
 			#r = collabFiltering_cross.run(td, valData, i, k)
-			# with p.lock:
-			# 	rp.append(r)
+			with p.lock:
+			 	rp.append(r)
 			
 	print rp
+	print "Mean"
+	print np.mean(rp)
 	with open('svd.txt', 'a') as f1:
 		f1.write(str(k)+','+str(np.mean(rp))+'\n')
 
 
-for k in range(1, 5):
+for k in range(1, 2):
 	print k
 	cv(k)

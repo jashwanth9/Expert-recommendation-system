@@ -80,12 +80,29 @@ def loadData():
 
 	# valData = [x[:2] for x in trainData[:int(0.15*len(trainData))]]
 	# trainData = trainData[int(0.15*len(trainData)):]
-	useritem_sparse = pickle.load(open('../features/useritemmatrix_normalized.dat', 'rb'))
+	# useritem_sparse = pickle.load(open('../features/useritemmatrix_normalized.dat', 'rb'))
+	ques_keys = pickle.load(open('../train_data/question_info_keys.dat', 'rb'))
 	user_keys = pickle.load(open('../train_data/user_info_keys.dat', 'rb'))
+	ques_keys_map = {}
 	user_keys_map = {}
 	for i in range(len(user_keys)):
 		user_keys_map[user_keys[i]] = i
-	return question_feats, useritem_sparse, user_keys_map, user_keys
+	for i in range(len(ques_keys)):
+		ques_keys_map[ques_keys[i]] = i
+	return question_feats, ques_keys_map, user_keys_map, user_keys
+
+
+def getUserItemMatrix(trainData, ques_keys_map, user_keys_map):
+	print "getting useritem matrix"
+	useritem = np.zeros(shape=(len(user_keys_map), len(ques_keys_map)))
+	for qid, uid, val in trainData:
+		if val == '1' or val==1:
+			useritem[user_keys_map[uid]][ques_keys_map[qid]] = 1
+				#posc+=1
+		else:
+			useritem[user_keys_map[uid]][ques_keys_map[qid]] = -0.125
+	uisparse = sparse.csr_matrix(useritem)
+	return uisparse
 
 
 def getModels(trainData, question_feats):
@@ -144,6 +161,7 @@ def getPredictions(valData, nbmodels, question_feats, useritem, user_keys_map, u
 		# print("score:- ", score)
 		# print("altscore:-", alt_score)
 		prob = nbmodels[uid].predict_proba([question_feats[qid]])
+		print prob
 		if nbmodels[uid].classes_[0] == 1:
 			predictions.append(prob[0][0]*0.75 + alt_score*0.43)
 		elif len(prob[0])>1:
@@ -152,13 +170,14 @@ def getPredictions(valData, nbmodels, question_feats, useritem, user_keys_map, u
 			predictions.append(alt_score*2)
 		#if predictions[-1] <= 0:
 			#predictions[-1] = 0.111
-	# print np.median(predictions)
-	# return predictions
+	print max(predictions)
+	return predictions
 
 
 def run(trainData, valData):
 	k = 180
-	question_feats, useritem_sparse, user_keys_map, user_keys = loadData()
+	question_feats, ques_keys_map, user_keys_map, user_keys = loadData()
+	useritem_sparse = getUserItemMatrix(trainData, ques_keys_map, user_keys_map)
 	nbmodels = getModels(trainData, question_feats)
 	predictions = getPredictions(valData, nbmodels, question_feats, useritem_sparse, user_keys_map, user_keys, k)
 	fname = '../validation/v_collab_alt_score.csv'
