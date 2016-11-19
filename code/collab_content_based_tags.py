@@ -21,7 +21,7 @@ def loadTrainTestData():
 			sp = line.split()
 			trainData.append((sp[0], sp[1], int(sp[2])))
 	testData = []
-	with open('../train_data/validate_nolabel.txt', 'r') as f1:
+	with open('../train_data/test_nolabel.txt', 'r') as f1:
 		line = f1.readline()
 		for line in f1:
 			testData.append(line.rstrip('\r\n').split(','))
@@ -142,13 +142,14 @@ def getPredictions(valData, nbmodels, question_feats, useritem, user_keys_map, u
 		score = score/k
 		prob = nbmodels[uid].predict_proba([question_feats[qid]])
 		if nbmodels[uid].classes_[0] == 1:
-			predictions.append(prob[0][0]*0.5 + score*0.43)
+			predictions.append(prob[0][0]*0.7 + score*0.43)
 		elif len(prob[0])>1:
-			predictions.append(prob[0][1]*0.5 + score*0.5)
+			predictions.append(prob[0][1]*0.7 + score*0.5)
 		else:
 			predictions.append(alt_score)
 		#if predictions[-1] <= 0:
 			#predictions[-1] = 0.111
+	print max(predictions)
 	return predictions
 
 
@@ -157,7 +158,7 @@ def run(trainData, valData):
 	question_feats, useritem_sparse, user_keys_map, user_keys = loadData()
 	nbmodels = getModels(trainData, question_feats)
 	predictions = getPredictions(valData, nbmodels, question_feats, useritem_sparse, user_keys_map, user_keys, k)
-	fname = '../validation/v_collab_cont_ques_topics.csv'
+	fname = '../validation/t_collab_alt_score.csv'
 	with open(fname , 'w') as f1:
 		f1.write('qid,uid,label\n')
 		for i in range(0, len(predictions)):
