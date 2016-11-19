@@ -76,9 +76,10 @@ print tdata.shape
 
 
 
-param = {'booster':'dart', 'sample_type':'uniform' , 'objective':'binary:logistic', 'normalize_type':'forest', 'max_depth':'70', 'eta':'0.09', 'rate_drop':'0.27', 'skip_drop':'0.7'}
-num_round = 630
-
+#param = {'booster':'dart', 'sample_type':'uniform' , 'objective':'binary:logistic', 'normalize_type':'forest', 'max_depth':'70', 'eta':'0.09', 'rate_drop':'0.27', 'skip_drop':'0.7'}
+#num_round = 630
+param = {'booster':'dart', 'sample_type':'weighted', 'normalize_type':'forest', 'rate_drop':'0.2', 'skip_drop':'0.9', 'objective':'binary:logistic', 'max_depth':'70', 'eta':'0.18', 'silent':0 }
+num_round = 150
 
 dtrain = xgb.DMatrix(data, label=label)
 dtest = xgb.DMatrix(tdata)
@@ -98,7 +99,7 @@ res = train_xgb(dtrain, dtest, num_round, param)
 
 ypred = res
 
-with open('../validation/v_xgb_dart_forest.csv', 'w') as f1:
+with open('../validation/v_dart_weig_forest.csv', 'w') as f1:
 	f1.write('qid,uid,label\n')
 	for i in range(0, len(ypred)):
 		f1.write(testData[i][0]+','+testData[i][1]+','+str(ypred[i])+'\n')
