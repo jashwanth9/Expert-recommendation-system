@@ -27,9 +27,11 @@ def cv(k):
 	rp = pymp.shared.list()
 	with pymp.Parallel(8) as p:
 		r = 0
-		for i in p.range(folds):
-			td = trainData[:(i)*(N/folds)] + trainData[(i+1)*(N/folds):]
-			valData = [x[:2] for x in trainData[i*(N/folds):(i+1)*(N/folds)]]
+		foldarr = [0,3,7]
+		for i in p.range(len(foldarr)):
+			print foldarr[i]
+			td = trainData[:(foldarr[i])*(N/folds)] + trainData[(foldarr[i]+1)*(N/folds):]
+			valData = [x[:2] for x in trainData[foldarr[i]*(N/folds):(foldarr[i]+1)*(N/folds)]]
 			#print len(td)
 			#print len(valData)
 
@@ -37,6 +39,7 @@ def cv(k):
 			#r =  random_value_testing.run(td, valData, i, k)
 			# r = dimreductionCollab.run(td, valData, k, i)
 			r = collab_content_based_tags.run(td, valData)
+			print r
 			#r = collabFiltering_cross.run(td, valData, i, k)
 			with p.lock:
 			 	rp.append(r)

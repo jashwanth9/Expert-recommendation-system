@@ -167,7 +167,7 @@ def getPredictions(valData, nbmodels, question_feats, useritem, user_keys_map, u
 		elif len(prob[0])>1:
 			predictions.append(prob[0][1]*0.75 + alt_score*0.5)
 		else:
-			predictions.append(alt_score*2)
+			predictions.append(alt_score)
 		#if predictions[-1] <= 0:
 			#predictions[-1] = 0.111
 	print max(predictions)
