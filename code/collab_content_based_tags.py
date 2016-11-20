@@ -21,7 +21,7 @@ def loadTrainTestData():
 			sp = line.split()
 			trainData.append((sp[0], sp[1], int(sp[2])))
 	testData = []
-	with open('../train_data/validate_nolabel.txt', 'r') as f1:
+	with open('../train_data/test_nolabel.txt', 'r') as f1:
 		line = f1.readline()
 		for line in f1:
 			testData.append(line.rstrip('\r\n').split(','))
@@ -167,7 +167,7 @@ def getPredictions(valData, nbmodels, question_feats, useritem, user_keys_map, u
 		elif len(prob[0])>1:
 			predictions.append(prob[0][1]*0.75 + alt_score*0.5)
 		else:
-			predictions.append(alt_score)
+			predictions.append(alt_score*3)
 		#if predictions[-1] <= 0:
 			#predictions[-1] = 0.111
 	print max(predictions)
@@ -180,13 +180,13 @@ def run(trainData, valData):
 	useritem_sparse = getUserItemMatrix(trainData, ques_keys_map, user_keys_map)
 	nbmodels = getModels(trainData, question_feats)
 	predictions = getPredictions(valData, nbmodels, question_feats, useritem_sparse, user_keys_map, user_keys, k)
-	fname = '../validation/v_collab_alt_score.csv'
+	fname = '../validation/t_collab_alt_scorec.csv'
 	with open(fname , 'w') as f1:
 		f1.write('qid,uid,label\n')
 		for i in range(0, len(predictions)):
 			f1.write(valData[i][0]+','+valData[i][1]+','+str(predictions[i])+'\n')
-	#return
-	return evaluate.ndcg(fname)
+	return
+	# return evaluate.ndcg(fname)
 
 if __name__ == "__main__":
 	trainData, testData = loadTrainTestData()
