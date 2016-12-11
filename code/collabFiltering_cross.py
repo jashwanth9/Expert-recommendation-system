@@ -69,6 +69,7 @@ def collabFilteringPredictions(useritem, sparse, k, valData, ques_keys_map, user
 
 	return predictions
 
+
 def getUserItemMatrix(trainData, ques_keys_map, user_keys_map):
 	print "getting useritem matrix"
 	useritem = np.zeros(shape=(len(user_keys_map), len(ques_keys_map)))

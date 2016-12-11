@@ -11,6 +11,20 @@ from scipy.linalg import sqrtm
 import evaluate
 
 
+def loadTrainTestData():
+	trainData = []
+	with open('../train_data/invited_info_train.txt', 'r') as f1:
+		for line in f1:
+			line = line.rstrip('\n')
+			sp = line.split()
+			trainData.append((sp[0], sp[1], int(sp[2])))
+	testData = []
+	with open('../train_data/test_nolabel.txt', 'r') as f1:
+		line = f1.readline()
+		for line in f1:
+			testData.append(line.rstrip('\r\n').split(','))
+	return trainData, testData
+
 def loadData():
 	# useritem_sparse = pickle.load(open('../features/useritemmatrix_normalized.dat', 'rb'))
 	# valData = []
@@ -85,10 +99,13 @@ def run(trainData, valData, k, foldno):
 	userf, itemf = getReducedMatrix(useritem_sparse, k)
 	predictions = getPredictions(valData, userf, itemf, ques_keys_map, user_keys_map)
 
-	fname = '../localvalidation/svd_'+str(k)+'_'+str(foldno)+'.csv'
+	fname = '../testsubmissions/svd_'+str(k)+'_'+str(foldno)+'.csv'
 	with open(fname, 'w') as f1:
 		f1.write('qid,uid,label\n')
 		for i in range(0, len(predictions)):
 			f1.write(valData[i][0]+','+valData[i][1]+','+str(predictions[i])+'\n')
 
-	return evaluate.ndcg(fname)
+	#return evaluate.ndcg(fname)
+
+trainData, testData = loadTrainTestData()
+run(trainData, testData, 50, 0)

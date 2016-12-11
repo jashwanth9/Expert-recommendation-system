@@ -11,6 +11,21 @@ import cPickle as pickle
 from sklearn.naive_bayes import MultinomialNB
 import collections
 
+
+def loadTrainTestData():
+	trainData = []
+	with open('../train_data/invited_info_train.txt', 'r') as f1:
+		for line in f1:
+			line = line.rstrip('\n')
+			sp = line.split()
+			trainData.append((sp[0], sp[1], int(sp[2])))
+	testData = []
+	with open('../train_data/test_nolabel.txt', 'r') as f1:
+		line = f1.readline()
+		for line in f1:
+			testData.append(line.rstrip('\r\n').split(','))
+	return trainData, testData
+
 def loadData():
 	print "loading data"
 	useritem_sparse = pickle.load(open('../features/useritemmatrix_normalized.dat', 'rb'))

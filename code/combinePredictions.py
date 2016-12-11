@@ -13,7 +13,11 @@ with open(sys.argv[1], 'r') as f1:
 		#print "h"
 		qid, uid, val1 = line.rstrip('\n').split(',')
 		val2 = f2.readline().rstrip('\n').split(',')[2]
-		nval = (float(val1) + float(val2))/2
+		try:
+			nval = 2*float(val1)*float(val2)/(float(val1)+float(val2))
+		except:
+			nval = 0
+		#nval = (float(val1) + float(val2))/2
 		f3.write(qid+','+uid+','+str(nval)+'\n')
 f2.close()
 f3.close()

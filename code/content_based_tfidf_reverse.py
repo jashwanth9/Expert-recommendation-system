@@ -3,6 +3,7 @@ import pdb
 from sklearn.naive_bayes import MultinomialNB
 import collections
 import cPickle as pickle
+import evaluate
 
 def loadData():
 	print "loading data"
@@ -17,16 +18,22 @@ def loadData():
 	# 		wordfreq = map(int, line.split())
 	# 		question_feats[question_keys[i]] = wordfreq
 	# 		i += 1
-	tf = pickle.load(open('../features/user_wordid_tfidf.dat', 'rb'))
-	tfx = tf.toarray()
-	for i in range(len(tfx)):
-		user_feats[user_keys[i]] = tfx[0].tolist()
-	with open('../train_data/invited_info_train.txt', 'r') as f1:
+	#tf = pickle.load(open('../features/user_charid_tfidf.dat', 'rb'))
+	#tfx = tf.toarray()
+	topics = []
+	with open('../train_data/user_info.txt', 'r') as f1:
+		for line in f1:
+			topic = map(int, (line.split()[1]).split('/'))
+			topics.append(topic)
+	for i in range(len(topics)):
+		user_feats[user_keys[i]] = [1 if x in topics[i] else 0 for x in range(145)]
+		#print np.sum(user_feats[user_keys[i]])
+	with open('../train_data/localtraining.txt', 'r') as f1:
 		for line in f1:
 			line = line.rstrip('\n')
 			sp = line.split()
 			trainData.append((sp[0], sp[1], int(sp[2])))
-	with open('../train_data/validate_nolabel.txt', 'r') as f1:
+	with open('../train_data/localvalidation.csv', 'r') as f1:
 		for line in f1:
 			valData.append(line.rstrip('\r\n').split(','))
 
@@ -65,9 +72,19 @@ def getPredictions(valData, nbmodels, user_feats):
 
 user_feats, trainData, valData = loadData()
 nbmodels = getModels(trainData, user_feats)
+#training_predictions = getPredictions([[x[0], x[1]] for x in trainData], nbmodels, user_feats)
 predictions = getPredictions(valData, nbmodels, user_feats)
-with open('../validation/content_word_tfidf_rev.csv', 'w') as f1:
+
+
+# with open('../validation/contentbased_char_tfidfrevtrain.csv', 'w') as f1:
+# 	f1.write('qid,uid,label\n')
+# 	for i in range(0, len(training_predictions)):
+# 		f1.write(trainData[i][0]+','+trainData[i][1]+','+str(training_predictions[i])+'\n')
+fname = '../localvalidation/content_rev_user_tags.csv'
+with open(fname, 'w') as f1:
 	f1.write('qid,uid,label\n')
 	for i in range(0, len(predictions)):
 		f1.write(valData[i][0]+','+valData[i][1]+','+str(predictions[i])+'\n')
 
+print evaluate.ndcg(fname)
+print evaluate.accuracy(fname)

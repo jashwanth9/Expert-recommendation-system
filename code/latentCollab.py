@@ -141,7 +141,7 @@ def getUserItemMatrix(trainData, ques_keys_map, user_keys_map):
 def run():
 	trainData, valData, ques_keys_map, user_keys_map = loadData()
 	useritem = getUserItemMatrix(trainData, ques_keys_map, user_keys_map)
-	k = 16
+	k = 4
 	model = em(useritem, k)
 
 run()

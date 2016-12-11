@@ -6,8 +6,9 @@ import content_based_tags
 import collabFiltering_cross
 import pymp
 import copy
-import dimreductionCollab
-import collab_content_based_tags
+import content_based_cold
+#import dimreductionCollab
+#import collab_content_based_tags
 
 
 
@@ -27,21 +28,26 @@ def cv(k):
 	rp = pymp.shared.list()
 	with pymp.Parallel(8) as p:
 		r = 0
-		for i in p.range(folds):
-			td = trainData[:(i)*(N/folds)] + trainData[(i+1)*(N/folds):]
-			valData = [x[:2] for x in trainData[i*(N/folds):(i+1)*(N/folds)]]
+		foldarr = [0,3,7]
+		for i in p.range(len(foldarr)):
+			print foldarr[i]
+			td = trainData[:(foldarr[i])*(N/folds)] + trainData[(foldarr[i]+1)*(N/folds):]
+			valData = [x[:2] for x in trainData[foldarr[i]*(N/folds):(foldarr[i]+1)*(N/folds)]]
 			#print len(td)
 			#print len(valData)
 
-
+			r = content_based_cold.run(td, valData, i)
 			# r = dimreductionCollab.run(td, valData, k, i)
-			r = collab_content_based_tags.run(td, valData)
-			print r
+
+			#r = collab_content_based_tags.run(td, valData)
 
 			#r = collabFiltering_cross.run(td, valData, i, k)
-			# with p.lock:
-			# 	rp.append(r)
-			
+			with p.lock:
+			 	rp.append(r)
+
+	print rp
+	print "Mean"
+
 	print np.mean(rp)
 	with open('svd.txt', 'a') as f1:
 		f1.write(str(k)+','+str(np.mean(rp))+'\n')
@@ -52,3 +58,4 @@ cv(0)
 # for k in range(1, 5):
 # 	print k
 # 	cv(k)
+

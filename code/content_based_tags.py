@@ -10,13 +10,13 @@ import evaluate
 
 def loadTrainTestData():
 	trainData = []
-	with open('../train_data/invited_info_train.txt', 'r') as f1:
+	with open('../train_data/localtraining.txt', 'r') as f1:
 		for line in f1:
 			line = line.rstrip('\n')
 			sp = line.split()
 			trainData.append((sp[0], sp[1], int(sp[2])))
 	testData = []
-	with open('../train_data/test_nolabel.txt', 'r') as f1:
+	with open('../train_data/localvalidation.csv', 'r') as f1:
 		line = f1.readline()
 		for line in f1:
 			testData.append(line.rstrip('\r\n').split(','))
@@ -52,9 +52,16 @@ def loadData():
 	# 		question_feats[question_keys[i]] = map(int, sp[4:7])
 	# 		i += 1
 	for i in range(len(question_keys)):
-		#question_feats[question_keys[i]] = [1 if x == topics[i] else 0 for x in range(22)]
-		question_feats[question_keys[i]] = [1, 1, 1]
-
+		question_feats[question_keys[i]] = [1 if x == topics[i] else 0 for x in range(22)]
+		#question_feats[question_keys[i]] = [1, 1, 1]
+	# with open('../features/question_char_freq.txt', 'r') as f1:
+	# 	i = 0
+	# 	for line in f1:
+	# 		line = line.rstrip()
+	# 		wordfreq = map(int, line.split())
+	# 		question_feats[question_keys[i]] = wordfreq
+	# 		i += 1
+	
 	#tf2 = pickle.load(open('../features/ques_wordid_tfidf.dat', 'rb'))
 	#tfx2 = tf2.toarray()
 	#for i in range(len(tfx2)):
@@ -113,16 +120,19 @@ def getPredictions(valData, nbmodels, question_feats):
 			#predictions[-1] = 0.111
 	return predictions
 
-def run(trainData, valData):
+def run(trainData, valData, foldno):
 
 	question_feats = loadData()
 	nbmodels = getModels(trainData, question_feats)
 	predictions = getPredictions(valData, nbmodels, question_feats)
-	fname = '../testsubmissions/content_ques_nofeat.csv'
+	fname = '../localvalidation/content_ques_topics'+str(foldno)+'.csv'
 	with open(fname , 'w') as f1:
 		f1.write('qid,uid,label\n')
 		for i in range(0, len(predictions)):
 			f1.write(valData[i][0]+','+valData[i][1]+','+str(predictions[i])+'\n')
+	return evaluate.ndcg(fname)
+	print evaluate.accuracy(fname)
+	print evaluate.logloss(fname)
 	return
 	#return evaluate.ndcg(fname)
 

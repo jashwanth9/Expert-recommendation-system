@@ -1,7 +1,7 @@
 from operator import itemgetter
 from ndcg import ndcg_at_k
 import numpy as np
-
+from sklearn import metrics
 def getTrueVal():
 	trueVal = {}
 	with open('../train_data/invited_info_train.txt', 'r') as f1:
@@ -45,7 +45,7 @@ def accuracy(valfile):
 		line = f1.readline()
 		for line in f1:
 			qid, uid, prob = line.rstrip('\n').split(',')
-			if prob > 0.5:
+			if float(prob) > 0.5:
 				pred = 1
 			else:
 				pred = 0
@@ -54,4 +54,17 @@ def accuracy(valfile):
 				cor += 1
 			tot += 1
 	return cor/float(tot)
-			
+
+def logloss(valfile):
+	trueVal = getTrueVal()
+	tv = []
+	pv = []
+	with open(valfile, 'r') as f1:
+		line = f1.readline()
+		for line in f1:
+			qid, uid, prob = line.rstrip('\n').split(',')
+			tv.append(trueVal[(qid, uid)])
+			pv.append(float(prob))
+
+	return metrics.log_loss(tv, pv)
+
