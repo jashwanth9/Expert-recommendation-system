@@ -57,10 +57,16 @@ def loadData():
 	# 		sp = line.split()
 	# 		question_feats[question_keys[i]] = map(int, sp[4:7])
 	# 		i += 1
-	for i in range(len(question_keys)):
-		question_feats[question_keys[i]] = [1 if x == topics[i] else 0 for x in range(22)]
+	#for i in range(len(question_keys)):
+		#question_feats[question_keys[i]] = [1 if x == topics[i] else 0 for x in range(22)]
 		# question_feats[question_keys[i]] = [1, 1, 1]
-
+	with open('../features/question_char_freq.txt', 'r') as f1:
+		i = 0
+		for line in f1:
+			line = line.rstrip()
+			wordfreq = map(int, line.split())
+			question_feats[question_keys[i]] = wordfreq
+			i += 1
 	#tf2 = pickle.load(open('../features/ques_wordid_tfidf.dat', 'rb'))
 	#tfx2 = tf2.toarray()
 	#for i in range(len(tfx2)):
