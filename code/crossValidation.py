@@ -45,6 +45,7 @@ def cv(k):
 			with p.lock:
 			 	rp.append(r)
 
+
 	print rp
 	print "Mean"
 
@@ -53,9 +54,7 @@ def cv(k):
 		f1.write(str(k)+','+str(np.mean(rp))+'\n')
 
 
-cv(0)
-
-# for k in range(1, 5):
-# 	print k
-# 	cv(k)
+for k in range(1, 2):
+	print k
+	cv(k)
 
