@@ -10,16 +10,17 @@ import evaluate
 
 def loadTrainTestData():
 	trainData = []
+	testData = []
 	with open('../train_data/invited_info_train.txt', 'r') as f1:
 		for line in f1:
 			line = line.rstrip('\n')
 			sp = line.split()
 			trainData.append((sp[0], sp[1], int(sp[2])))
-	testData = []
-	with open('../train_data/test_nolabel.txt', 'r') as f1:
-		line = f1.readline()
-		for line in f1:
-			testData.append(line.rstrip('\r\n').split(','))
+			testData.append([sp[0], sp[1]])
+	# with open('../train_data/validate_nolabel.txt', 'r') as f1:
+	# 	line = f1.readline()
+	# 	for line in f1:
+			# testData.append(line.rstrip('\r\n').split(','))
 	return trainData, testData
 
 def loadData():
@@ -52,8 +53,8 @@ def loadData():
 	# 		question_feats[question_keys[i]] = map(int, sp[4:7])
 	# 		i += 1
 	for i in range(len(question_keys)):
-		#question_feats[question_keys[i]] = [1 if x == topics[i] else 0 for x in range(22)]
-		question_feats[question_keys[i]] = [1, 1, 1]
+		question_feats[question_keys[i]] = [1 if x == topics[i] else 0 for x in range(22)]
+		# question_feats[question_keys[i]] = [1, 1, 1]
 
 	#tf2 = pickle.load(open('../features/ques_wordid_tfidf.dat', 'rb'))
 	#tfx2 = tf2.toarray()
@@ -111,21 +112,26 @@ def getPredictions(valData, nbmodels, question_feats):
 			predictions.append(0)
 		#if predictions[-1] <= 0:
 			#predictions[-1] = 0.111
+	for i in range(len(predictions)):
+		predictions[i] = (predictions[i]*4) + 1
 	return predictions
 
-def run(trainData, valData):
+
+def run(trainData, valData, j):
 
 	question_feats = loadData()
 	nbmodels = getModels(trainData, question_feats)
-	predictions = getPredictions(valData, nbmodels, question_feats)
-	fname = '../testsubmissions/content_ques_nofeat.csv'
+	predictions = getPredictions(testData, nbmodels, question_feats)
+
+
+	fname = '../fe/content_ques_nofeat'+str(j)+'.txt'
 	with open(fname , 'w') as f1:
-		f1.write('qid,uid,label\n')
+		# f1.write('qid,uid,label\n')
 		for i in range(0, len(predictions)):
-			f1.write(valData[i][0]+','+valData[i][1]+','+str(predictions[i])+'\n')
-	return
-	#return evaluate.ndcg(fname)
+			f1.write(valData[i][0]+' '+valData[i][1]+' '+str(predictions[i])+'\n')
+	return 0
+	# return evaluate.ndcg(fname)
 
 if __name__ == "__main__":
 	trainData, testData = loadTrainTestData()
-	run(trainData, testData)
+	run(trainData, testData, 9)

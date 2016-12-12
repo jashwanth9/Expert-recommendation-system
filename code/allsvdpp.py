@@ -30,18 +30,18 @@ def cv(k):
 
 	rp = pymp.shared.list()
 	with pymp.Parallel(8) as p:
-	r = 0
+		r = 0
 		for i in p.range(8):
 			td = trainData[:(i)*(N/folds)] + trainData[(i+1)*(N/folds):]
 			tdfname = 'cv/train'+str(i)
 			with open(tdfname, 'w') as f1:
 				for e in range(len(td)):
-					f1.write(td[i][0]+' '+td[i][1]+' '+str(td[i])+'\n')
-			valData = [x[:2] for x in trainData[i*(N/folds):(i+1)*(N/folds)]]
+					f1.write(td[e][0]+' '+td[e][1]+' '+str(td[e][2])+'\n')
+			valData = trainData[i*(N/folds):(i+1)*(N/folds)]
 			valfname = 'cv/val'+str(i)
 			with open(valfname, 'w') as f1:
 				for e in range(len(valData)):
-					f1.write(valData[i][0]+','+valData[i][1]+','+str(valData[i])+'\n')
+					f1.write(valData[e][0]+','+valData[e][1]+','+str(valData[e][2])+'\n')
 
 			#print len(td)
 			#print len(valData)

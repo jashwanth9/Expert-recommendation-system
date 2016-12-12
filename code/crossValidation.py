@@ -35,10 +35,10 @@ def cv(k):
 			#print len(td)
 			#print len(valData)
 
-			#r = content_based_tags.run(td, valData)
+			r = content_based_tags.run(td, valData, foldarr[i])
 			#r =  random_value_testing.run(td, valData, i, k)
 			# r = dimreductionCollab.run(td, valData, k, i)
-			r = collab_content_based_tags.run(td, valData)
+			# r = collab_content_based_tags.run(td, valData)
 			print r
 			#r = collabFiltering_cross.run(td, valData, i, k)
 			with p.lock:
